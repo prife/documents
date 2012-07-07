@@ -1,0 +1,118 @@
+在ubuntu上安装编译安装qemu
+--------------------------------------------------------------------------------
+./configure --target-list=arm-softmmu
+
+Error: zlib check failed
+Make sure to have the zlib libs and headers installed.
+
+$ sudo apt-get install zlib1g-dev 
+如果需要安装glibc的话，则执行下面语句。
+$ sudo apt-get install libglib2.0-dev
+
+编译的时候提示你说没有sdl，不是说的你没有安装这个包，而是说你没有安装对应的dev包。 
+
+$ sudo apt-get install libsdl1.2-dev 
+就可以了 
+
+当你要编译一个在源里面已经存在的软件（如qemu）的时候 
+你需要 
+$ sudo apt-get build-dep qemu
+
+默认情况下，ubuntu下的终端中，git没有颜色,可以使用如下命令给git配色
+	$ git config --global color.status auto  
+	$ git config --global color.diff auto  
+	$ git config --global color.branch auto  
+	$ git config --global color.interactive auto  
+
+注意，最新的qemu又做了一些更新，因此wiki的配置针对的是特定的qemu版本。
+修订wiki。或者取消补丁。
+
+因此，方法一，是checkout那个版本，然后打上补丁，编译。
+
+摸索方法2：修改RTT代码，实现不需要qemu补丁。
+
+$ sudo apt-install git-gui
+$ 在repo目录中执行 gitk即可打开gui前端。
+
+--------------------------------------------------------------------------------
+2012/07/07 19:05:35
+开始在2440上尝试运行Netbsd。先来研究一下NOR启动和nand启动时的顺序
+参考：
+	在ubuntu上编译qemu-arm
+	http://www.rt-thread.org/dokuwiki/doku.php?id=linux%E4%B8%8B%E7%BC%96%E8%AF%91rt-thread
+
+	将rtt代码烧录到nand运行
+	http://www.rt-thread.org/phpbbforum/viewtopic.php?f=18&t=790
+rtt源码：
+	http://code.google.com/p/rt-thread/source/checkout
+	bsp/mini2440 目录
+
+学习：
+--------------------------------------------------------------------------------
+mini2440上板载2×32MB的SDRAM，都在nCS6区，即起始地址为0x3000 0000 
+
+uboot在nand上，启动时，uboot先把自己加载到SDRAM上运行，然后再从nand上加载linux运行。
+
+而RTT在rtconfig.py中明确指定了链接的地址，即0x3000 0000,因此也就是说必须通过某种方式将RTT加载到0x3000 0000才能运行，我们可以借助jlink等硬件工具实现，也可以通过uboot等软件实现加载。
+
+再来说qemu的问题，mini2440的qemu就有这个问题，默认情况是下是不能运行RT-Thread的，因为加载的地址不对，默认情况下是从nand上运行（uboot），所以有问题。如何才能实现不修改qemu代码就实现加载运行RT-Thread呢？
+如果qemu支持NOR启动，可是为什么效果不对呢？
+
+2012/07/07 23:51:48
+先来修复qemu的问题，如何在不修改qemu代码的方式下，启动qemu运行。
+
+思路：使用mini2440-qemu新增加的pflash选项。
+摸索出来的使用方法：
+$ MINI2440_BOOT="nor"
+$ export MINI2440_BOOT
+$ ./qemu-system-arm -M mini2440 -pflash ~/projects/svn/rtt/trunk/bsp/mini2440/rtthread.bin -show-cursor
+	2440_init: Boot mode: NOR
+	mini2440_init: Register parallel flash 0 size 0x1a1b00 'pflash0'
+	S3C: CLK=240 HCLK=240 PCLK=240 UCLK=57
+	QEMU: ee24c08_init
+	DM9000: INIT QEMU MAC : 52:54:00:12:34:56
+	nand_init no/invalid block device, allocating 131072*528 in ram
+	浮点数例外 (核心已转储)
+
+从上面输出的信息可以看到已经是nor的启动方式了，但是爆“浮点数例外”的错误，解决方法：
+	http://www.arm9home.net/simple/index.php?t20088.html
+
+但是又有新的问题：如下
+
+prife@smart:~/projects/git/mini2440-qemu/arm-softmmu$ ./qemu-system-arm -M mini2440 -pflash ~/projects/svn/rtt/trunk/bsp/mini2440/rtthread.bin -show-cursor
+	mini2440_init: Boot mode: NOR
+	mini2440_init: Register parallel flash 0 size 0x1a1b00 'pflash0'
+	S3C: CLK=240 HCLK=240 PCLK=240 UCLK=57
+	QEMU: ee24c08_init
+	DM9000: INIT QEMU MAC : 52:54:00:12:34:56
+	nand_init no/invalid block device, allocating 131072*528 in ram
+	S3C: CLK=240 HCLK=240 PCLK=240 UCLK=57
+	S3C: CLK=240 HCLK=240 PCLK=240 UCLK=57
+	qemu: fatal: Trying to execute code outside RAM or ROM at 0x00200000
+
+	R00=00000000 R01=00000000 R02=00000000 R03=00000000
+	R04=00000000 R05=00000000 R06=00000000 R07=00000000
+	R08=00000000 R09=00000000 R10=00000000 R11=00000000
+	R12=00000000 R13=00000000 R14=00000000 R15=00200000
+	PSR=400001d3 -Z-- A svc32
+	已放弃 (核心已转储)
+
+说明：上面的操作中，我已经将bsp/mini2440/rtconfig.py中的
+	TextBase = '0x00000000'
+
+思考：RT-Thread中定义的RAM的地址显然必须在SDRAM中分配，即必须是0x3000 0000,也就是说应该还需要制定一下RAM的地址。并且，由于SDRAM，还需要增加一个函数来初始化SDRAM。。但是这些在bsp/mini2440中都没有，所以必然有问题。。
+[疑问］上面这个工作是否是在bsp/mini2440/mini2440.ld中是实现的呢？
+
+解决：
+(1) 思路一，不使用BOOTLOADER，修改RTT加载地址
+添加初始化SDRAM的代码
+
+1. 使用GCC编译
+需要参考如何修改的地方包括，gcc.ld脚本，start_GCC.S,rtconfig.py这个三个地方。
+[疑问］上面这个三个地方都修改了，还是木有搞定。。
+
+2. 使用MDK/armcc编译
+[待验证，ubuntu下无法使用MDK编译]只需要修改rtconfig.py即可
+
+（2）思路二，使用BOOTLOADER，保持RTT加载地址不变
+qemu上实现uboot...
