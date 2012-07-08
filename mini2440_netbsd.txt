@@ -100,7 +100,7 @@ prife@smart:~/projects/git/mini2440-qemu/arm-softmmu$ ./qemu-system-arm -M mini2
 说明：上面的操作中，我已经将bsp/mini2440/rtconfig.py中的
 	TextBase = '0x00000000'
 
-思考：RT-Thread中定义的RAM的地址显然必须在SDRAM中分配，即必须是0x3000 0000,也就是说应该还需要制定一下RAM的地址。并且，由于SDRAM，还需要增加一个函数来初始化SDRAM。。但是这些在bsp/mini2440中都没有，所以必然有问题。。
+思考：RT-Thread中定义的RAM的地址显然必须在SDRAM中分配，即必须是0x3000 0000,也就是说应该还需要指定一下RAM的地址。并且，由于SDRAM，还需要增加一个函数来初始化SDRAM。。但是这些在bsp/mini2440中都没有，所以必然有问题。。
 [疑问］上面这个工作是否是在bsp/mini2440/mini2440.ld中是实现的呢？
 
 解决：
