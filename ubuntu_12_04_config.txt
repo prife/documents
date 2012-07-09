@@ -1,0 +1,280 @@
+遇到的问题：
+
+1.
+
+有时候发现 /etc/hosts无法正常读取，在终端vim中，此时ipv6网站都无法打开
+而重启则会解决这个问题。
+
+--------------------------------------------------------------------------------
+1. fcitx，已经安装了，但是fctix的默认字体非常难看
+
+想办法解决fcitx候选词列表中字体配置。
+更换版本即可，在软件中心中，输入fcitx，选择第一个。
+
+2. 解决gvim的问题
+   需要自己编译gvim，得学习一下如何打deb包
+   升级系统以后，gvim bug修复！
+   但是gvim中汉字稀疏，汉字丑陋   
+   指定字体后解决这个问题。
+
+   gvim在插入模式下，使用ESC键后，fcitx自动退出，还需要重新调出输入法才能工作，这样太麻烦了。
+
+3. chrome的代理配置
+  配置好规则，然后设置为自动规则模式。
+  看来需要好好摸索一下proxy switchy的功能。
+  
+  如何实现将hosts中的所有网页都直接链接，不通过代理，而其他都使用的代理呢？？
+
+  安装proxy switch后，通过配置规则实现，进一步实现：如何能够将hosts中的所有文件都自动不使用代理呢？
+
+  离线安装插件的方法
+
+  gvim fcitx总是自动消失（ubunt中如何配置呢？）
+  
+  njacljdblagcjdmljcgpjkcinfflmgdk
+https://clients2.google.com/service/update2/crx?response=redirect&x=id%3Dnjacljdblagcjdmljcgpjkcinfflmgdk%26uc
+4. 硬盘发热问题还没有解决。
+   没有找到可以显示温度的东西
+
+5. 升级系统
+  sudo apt-get upgrade
+会升级整个系统的软件包
+
+6. 安装7zip/rar压缩包支持
+sudo apt-get install p7zip-full
+
+7-Zip extension for Ark to extract .rar files, also install:
+sudo apt-get install p7zip-rar
+
+8. fcitx
+  配置皮肤，字体等等
+
+ 在软件源中有两个，该选哪个呢？
+  选择第一个。不要选择后面的。
+
+终端中运行，报ASSERT错误。
+[WARN] /build/buildd/fcitx-4.2.0/src/lib/fcitx-config/fcitx-config.c:179-missing value: Active
+fopen: 资源暂时不可用
+[WARN] /build/buildd/fcitx-4.2.0/src/ui/classic/skin.c:142-无法加载皮肤思意，回到默认皮肤
+[INFO] /build/buildd/fcitx-4.2.0/src/ui/classic/skin.c:112-/usr/share/fcitx/skin/default/fcitx_skin.conf
+
+
+我决定阅读fcitx源码，找出原因。
+sudo apt-get install dpkg-dev
+sudo apt-get source fcitx 会在当前目录下载源码包，并解压。
+
+
+9. 上网问题
+ 必须使用chrome注销，否则会导致无法在其他系统中运行。
+
+
+配置开发环境，git/ svn /eclipse/ gcc工具链等
+
+
+在 vimrc 里加入：
+set hlsearch
+
+
+配置显卡问题
+
+配置驱动
+http://forum.ubuntu.org.cn/viewtopic.php?t=129146
+	
+电脑型号	华硕 K42JE 笔记本电脑
+操作系统	Windows 7 旗舰版 32位 ( DirectX 11 )
+	
+处理器	英特尔 Core i3 M 330 @ 2.13GHz 双核笔记本处理器
+主板	华硕 K42JE (英特尔 HM55 芯片组)
+内存	2 GB ( 尔必达 DDR3 1333MHz )
+主硬盘	希捷 ST9320325AS ( 320 GB / 5400 转/分 )
+显卡	ATI Mobility Radeon HD 5470  ( 512 MB / 华硕 )
+显示器	LG LGD018B ( 14 英寸 )
+光驱	日立-LG DVDRAM GT32N DVD刻录机
+声卡	瑞昱 ALC269 @ 英特尔 5 Series/3400 Series Chipset 高保真音频
+网卡	Atheros AR5007 Wireless Network Adapter / Azurewave
+
+
+http://bbs.stuhome.net/read.php?tid=1161396&fpage=2
+
+diseng@thinkpad:~$ glxgears 
+31775 frames in 5.0 seconds = 6354.850 FPS
+31981 frames in 5.0 seconds = 6396.066 FPS
+32197 frames in 5.0 seconds = 6439.235 FPS
+32273 frames in 5.0 seconds = 6454.544 FPS
+
+ATI显卡,安装的non-free里的fglrx驱动
+
+http://forum.ubuntu.org.cn/viewtopic.php?p=1558560
+
+prife@smart:~$ glxgears
+12425 frames in 5.0 seconds = 2484.831 FPS
+14315 frames in 5.0 seconds = 2862.858 FPS
+14486 frames in 5.0 seconds = 2897.047 FPS
+13447 frames in 5.0 seconds = 2689.301 FPS
+14181 frames in 5.0 seconds = 2836.046 FPS
+
+[必读]参考整个帖子可以完成显卡的安装
+http://wiki.cchtml.com/index.php/Main_Page
+http://wiki.cchtml.com/index.php/Ubuntu_Precise_Installation_Guide#Using_Ubuntu-supplied_fglrx.2FCatalyst
+
+prife@smart:~$ fglrxinfo 
+display: :0  screen: 0
+OpenGL vendor string: Advanced Micro Devices, Inc.
+OpenGL renderer string: ATI Mobility Radeon HD 5400 Series 
+OpenGL version string: 4.2.11733 Compatibility Profile Context
+
+prife@smart:~$ fgl_glxgears 
+Using GLX_SGIX_pbuffer
+4763 frames in 5.0 seconds = 952.600 FPS
+5224 frames in 5.0 seconds = 1044.800 FPS
+5204 frames in 5.0 seconds = 1040.800 FPS
+5249 frames in 5.0 seconds = 1049.800 FPS
+5110 frames in 5.0 seconds = 1022.000 FPS
+c^C
+
+prife@smart:~$ glxgears 
+15012 frames in 5.0 seconds = 3002.338 FPS
+15348 frames in 5.0 seconds = 3069.461 FPS
+15367 frames in 5.0 seconds = 3073.377 FPS
+15320 frames in 5.0 seconds = 3063.964 FPS
+15375 frames in 5.0 seconds = 3074.703 FPS
+15205 frames in 5.0 seconds = 3040.871 FPS
+15017 frames in 5.0 seconds = 3003.301 FPS
+
+可以看出，使用官方催化剂后，显卡帧数大约多了两百。效果不是很明显。
+
+10. 配置gvim开发环境，打造成合格的IDE
+
+问题1：配置gvim中的中文字体
+  目前中文字体太稀疏不好看，字体太小
+
+配置成功，等一下编写配置文档。
+
+问题2：配置GUI字体，默认的字体显示的效果太糟糕了。
+fcitx在gvim中表现很糟糕。但是在终端vim中表现不俗
+
+ps. 查看系统字体列表使用 fc-list 命令
+
+11. 安装arm-eabi工具链，配置rtt开发环境
+遇到错误
+http://www.360doc.com/content/10/1105/16/2036337_66879235.shtml
+
+安装scons
+  sudo apt-get install scons
+
+linux下没有太好用的svn gui客户端，因此这里直接使用svn。
+  sudo apt-get install subversion
+
+安装git
+
+
+安装USB转串口驱动 && 安装串口工具,  putty?? 
+ubuntu 12.04中默认就自带了ch341的串口驱动,因此不需要安装。
+http://xiyanyu.blogbus.com/logs/110306277.html
+
+prife@smart:~/projects/svn/rtt/trunk/bsp/stm32f10x_test$ dmesg | grep "ch341"
+[ 6609.222948] USB Serial support registered for ch341-uart
+[ 6609.222977] ch341 2-1.1:1.0: ch341-uart converter detected
+[ 6609.224879] usb 2-1.1: ch341-uart converter now attached to ttyUSB0
+[ 6609.224902] usbcore: registered new interface driver ch341
+
+安装 minicom
+ sudo apt-get install minicom
+
+ 第一次启动时执行 minicom -s 配置，配置一下串口，编辑串口设备为 ttyUSB0, 波特率为 115200 8N1
+
+ 将配置保存为默认，然后从菜单中选择Exit后，就会和板子上进行串口通信了
+ 如果想要退粗minicom，按下 CTRL+A键，后再低栏会出现提示，在按Z键，弹出一个对话框，按下x，即退出minicom
+
+安装jlink under linux版
+挂网下载4.50版本（不确定是否会导致固件升级而不可用）
+
+EGGER J-Link Commander V4.50i ('?' for help)
+Compiled Jun 22 2012 19:00:38
+Can not connect to J-Link via USB.
+
+尝试重新安装libusb-dev试试。
+
+(1)安装libusb
+sudo apt-get install libusb-dev
+(2)安装
+ sudo JLinkExe后，自动升级了固件，而不使用sudo时则没有升级固件。
+
+(3) jlink变砖头了。
+
+ubutu上参考网页：
+http://www.tincantools.com/wiki/OpenOCD_Ubuntu_Package
+ sudo openocd -f /usr/share/openocd/scripts/target/stm32f1x.cfg -f /usr/share/openocd/scripts/interface/jlink.cfg 
+
+
+
+12. 学习deb包编译（这个没有必要学习，浪费时间,这样可以通过ppa使用最新的deb包么？）
+
+
+13. 安装多线程下载工具
+ http://www.douban.com/group/topic/19790695/
+ http://www.oschina.net/news/18527/uget-1-8-0-aria2
+ 
+sudo add-apt-repository ppa:plushuang-tw/uget-stable
+sudo apt-get update
+sudo apt-get install uget
+
+14. 解决温度过高问题。
+──────────────────────────┤ 正在设定 hddtemp ├────────────────────────────┐  
+ │                                                                           │  
+  │ The hddtemp program can be run as a daemon, listening on port 7634 for    │  
+   │ incoming connections. It is used by some software such as gkrellm to get  │  
+    │ the temperature of hard drives.                                           │  
+	 │                                                                           │  
+	  │ You have the option of starting the hddtemp daemon automatically on       │  
+	   │ system boot. If in doubt, it is suggested to not start it automatically   │  
+	    │ on boot.                                                                  │  
+		 │                                                                           │  
+		  │ This setting can be modified later by running 'dpkg-reconfigure           │  
+		   │ hddtemp'.                                                                 │  
+		    │                                                                           │  
+			 │ Should the hddtemp daemon be started at boot?                             │  
+			  │                                                                           │  
+			   │                    <是>                        <否>    
+
+http://ubuntudaily.net/2012/04/use-psensor-to-monitor-temperatures-in-ubuntu			   
+
+上面的是图形界面不好看，来看看这个
+http://ubuntudaily.net/2011/07/install-wireshark-161-using-ubuntu-ppa
+
+注意，下面的语句在12.04中无法安装，提示找不到包
+	sudo apt-get install sensors-applet
+
+上面只是安装了温度显示图标，但是温度是否准确还需要和鲁大师尽心对比。
+
+15. 解决屏幕亮度无法保存问题&触摸板配置问题
+ http://forum.ubuntu.org.cn/viewtopic.php?f=126&t=376034 
+触摸板
+http://qingyang.me/2012/ubuntu-1204-disable-the-touchpad-completely/
+
+16 配置启动程序
+在dash中输入“启动”（如果是fcitx，则需要通过粘帖实现中文输入）
+
+  dash支持拼音，但是注意上面应该输入 "qi dong"中间的空格是必须的。
+
+密码全部是大写的。https://bugs.launchpad.net/
+
+17 安装工具软件
+sudo apt-get install wireshark
+  执行时，需要管理员权限，sudo wireshark,才可以正确识别网卡。
+  或者可以配置一下，参考 
+  vim /usr/share/doc/wireshark-common/README.Debian 
+
+18 尝试github上管理代码！！
+
+19. 配置nautilus，增加一个快速打开命令行的工具
+参考: http://www.ubuntuhome.com/nautilus-terminal-gui-meets-cli.html
+
+ sudo add-apt-repository ppa:flozz/flozz
+ sudo apt-get update && sudo apt-get install nautilus-terminalo
+重启
+打开终端，输入‘nautilus -q’ 重启Nautilus
+使用：
+Nautilus终端的理念很简单，我惊奇于为什么过去人没有去实现它。它将终端集成在主要导航栏的下面，你可以在设置中定制出自己的终端，按下F3键，你还可以获得一个简洁的独立终端。
+
+上面的不好用，sudo apt-get install nautilus-open-terminal, 还是整个更好用
