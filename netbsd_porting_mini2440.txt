@@ -1,0 +1,71 @@
+Reference:
+http://www.netbsd.org/docs/guide/en/chap-build.html
+http://www.netbsd.org/docs/guide/en/chap-build.html#chap-boot-cross-config-kernel
+
+下载源码包：
+http://www.netbsd.org/
+ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-6.0_BETA2/source/sets/
+
+===========================================================================
+$ chown prife src
+
+$ chown prife src
+$ cd /usr
+$ make obj (这一步是必须的)
+$ ./build.sh -u -m evbarm tools
+
+checking lex output file root... /usr/src/gnu/dist/binutils/binutils/configure:
+line 2702: /usr/src/gnu/dist/binutils/missing: Permission denied
+
+prife@smart:/usr/src$ ls -l /usr/src/gnu/dist/binutils/missing 
+-rw-rw-r-- 1 prife prife 10587  2月  3  2006 /usr/src/gnu/dist/binutils/missing
+
+怀疑是上面文件缺少+权限，因此执行如下操作
+prife@smart:/usr/src$ chmod +x /usr/src/gnu/dist/binutils/missing 
+
+正确编译后输出：
+===> Tools built to /usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686
+===> build.sh ended:   Mon Jul  9 19:47:58 CST 2012
+===> Summary of results:
+	 build.sh command: ./build.sh -u -m evbarm tools
+	 build.sh started: Mon Jul  9 19:39:12 CST 2012
+	 NetBSD version:   5.1
+	 MACHINE:          evbarm
+	 MACHINE_ARCH:     arm
+	 Build platform:   Linux 3.2.0-26-generic-pae i686
+	 HOST_SH:          /bin/sh
+	 TOOLDIR path:     /usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686
+	 DESTDIR path:     /usr/src/obj/destdir.evbarm
+	 RELEASEDIR path:  /usr/src/obj/releasedir
+	 makewrapper:      /usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686/bin/nbmake-evbarm
+	 Updated /usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686/bin/nbmake-evbarm
+	 Tools built to /usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686
+	 build.sh ended:   Mon Jul  9 19:47:58 CST 2012
+===> .
+prife@smart:/usr/src$
+
+注意，跟手册上描述的不同，tooldir路径在/usr/src/obj/下
+
+2 接下来配置内核
+
+$ cd /usr/src/sys/arch/evbarm/conf 这个目录下存放了很多内核的配置文件
+$ cp SMDK_2410_INSTALL MYKERNEL
+$ vi MYKERNEL
+$ /usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686/bin/nbconfig MYKERNEL
+		Build directory is ../compile/MYKERNEL
+		Don't forget to run "make depend"
+
+3. 编译内核
+有两种方法，第一种手动编译
+prife@smart:/usr/src/sys/arch/evbarm/conf$ cd ../compile/MYKERNEL/
+
+prife@smart:/usr/src/sys/arch/evbarm/compile/MYKERNEL$ /usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686/bin/nbmake-evbarm depend
+
+prife@smart:/usr/src/sys/arch/evbarm/compile/MYKERNEL$ /usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686/bin/nbmake-evbarm 
+这一步遇到错误：buffer overflow, ar退出，原因未知，重新运行一遍
+
+第二种，使用build.sh来编译内核
+$ cd /usr/src
+$ ./build.sh -u -m sparc64 kernel=MYKERNEL
+
+4. 
