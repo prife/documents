@@ -68,4 +68,30 @@ prife@smart:/usr/src/sys/arch/evbarm/compile/MYKERNEL$ /usr/src/obj/tooldir.Linu
 $ cd /usr/src
 $ ./build.sh -u -m sparc64 kernel=MYKERNEL
 
-4. 
+4. 执着ramfs文件系统
+
+5. 生成最终的的文件
+
+=========================================================================
+实验步骤
+1. 在ubuntu中如何编译/烧录uboot?
+
+2. 搭建tftp/NFS服务器用于挂载文件系统
+
+3. U-Boot> tftp 30a00000 bootmini2440
+dm9000 i/o: 0x20000300, id: 0x90000a46
+DM9000: running in 16 bit mode
+MAC: 08:08:11:18:12:27 
+TFTP from server 192.168.24.24; our IP address is 192.168.24.69 
+Filename 'bootmini2440'. 
+Load address: 0x30a00000 
+Loading: T ######### 
+done< 
+Bytes transferred = 117628 (1cb7c hex) 
+U-Boot> go 30a00000 nfs:netbsd
+
+可见，U-Boot加载bootmini2440，而bootmini2440再来加载netbsd内核，研究一下bootmini2440所加载的内核地址吧
+
+现在有两个思路，第一，生成一个elf格式的boot2440，第二找出netbsd的实际加载地址
+
+新问题：如何生成NetBsd需要的bootloader？采用什么命令？

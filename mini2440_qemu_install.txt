@@ -1,13 +1,55 @@
+系统：ubuntu 12.04 32bit
+toolchain: arm-none-eabi-
+说明：工具链选择arm-none-eabi或者arm-none-linux-gnueabi都可以,笔者这里使用的是Codesourcery的arm-none-eabi-20110314.bin
+
 参考资料：
 http://www.cnblogs.com/jinmu190/archive/2011/03/21/1990698.html
 
-系统：ubuntu 12.04 32bit
-toolchain: arm-none-eabi-
-
 1. 编译安装qemu
+$ git clone http://repo.or.cz/w/qemu/mini2440.git
+说明:笔者这里使用的版本是 2011-10-13的mini2440-qemu版本，这个版本中存在"浮点数例外“的bug，因此需要打补丁修正。
+
+$ git checkout -b myqemu
+创建一个myqemu分支用于打补丁，关于git详细请自行goolge。
+
+$ 打上如下补丁，或者手动修改。
+diff --git a/sdl.c b/sdl.c
+index 178b553..bdf412b 100644
+--- a/sdl.c
++++ b/sdl.c
+@@ -445,6 +445,7 @@ static void sdl_grab_end(void)
+ static void sdl_send_mouse_event(int dx, int dy, int dz, int x, int y, int stat
+ {
+     int buttons;
++    if(width==1 && height==1) return;
+     buttons = 0;
+     if (state & SDL_BUTTON(SDL_BUTTON_LEFT))
+         buttons |= MOUSE_EVENT_LBUTTON;
+
+$ ./configure --target-list=arm-softmmu
+如果出现如下提示：
+Error: zlib check failed
+Make sure to have the zlib libs and headers installed.
+那么执行
+$ sudo apt-get install zlib1g-dev 
+
+同样，如果出现
+Error: sdl check failed
+则执行如下安装
+$ sudo apt-get install libsdl1.2-dev 
+
+$ make -j4
+正确编译之后，会在arm-softmmu下生成qemu-system-arm文件
+prife@smart:~/projects/git/mini2440-qemu$ ls -l arm-softmmu/qemu-system-arm
+-rwxrwxr-x 1 prife prife 8455432  7月 11 19:05 arm-softmmu/qemu-system-arm
 
 2. 编译uboot-mini2440
 
+我们既可以使用友善之臂官方提供的编译好的u-boot二进制，也可以自己基于源码编译。
+2.1 使用官方提供的u-boot
+http://www.friendlyarm.net/downloads
+
+2.2 
 最后链接时遇到错误
 arm-none has EABI version 5, but target u-boot has EABI version 0
 参考这里得知：
@@ -45,9 +87,13 @@ index 578e046..6ee2af4 100644
  PLATFORM_RELFLAGS +=$(call cc-option,-mshort-load-bytes,$(call cc-option,-malignment-traps,))
  PLATFORM_LDFLAGS += --defsym raise=hang
  
+$ make -j4
+说明：这里的-j4是并行编译的意思，笔者的机器为双核，因此这里选择j4,一般来说jN，N=2×cpu核心数目。
+
+编译完成以后，我们在当前目录下得到uboot的2进制程序。
+
 3. 启动uboot
 说明：为了操作的简单，笔者对qemu定义了alias
-
 
 prife@smart:~/projects/git/uboot-mini2400$ qemu -M mini2440 -serial stdio -mtdblock u-boot-nand2k.bin 
 
@@ -88,118 +134,117 @@ MINI2440 #
   dynenv ext2ls ext2load fatload fatls fatinfo ...
 MINI2440 # 
 
-4. 配置NFS
-其加入网络功能，实现NFS。
-$ sudo apt-get install nfs-kernel-server
-修改/etc/exports文件，添加如下一行
-/home/username/nfs *(rw,sync,no_root_squash)----这个啥意思？？
-我实际添加的是
-/home/prife/work *(rw,sync,no_subtree_check)
+4. 配置qemu的网络功能
 
-cmd="qemu
-	-M mini2440 $* \
-	-serial stdio \
-	-mtdblock "$name_nand" \
-	-show-cursor \
-	-usb -usbdevice keyboard -usbdevice mouse \
-	-net nic,vlan=0 \
-	-net tap,vlan=0,ifname=tap0 \
-	-monitor telnet::5555,server,nowait"
+在上面的介绍中，我们使用mini2440-qemu启动了uboot，但是此时的qemu并没有网络功能，那么也就不能使用u-boot通过NFS或者TFTP来加载内核或者文件系统，为了方便开发，接下来，我们为qemu配置网络功能。
 
-注意上面的命令中，-net nic,vlan=0是啥意思？
+qemu支持多种网络链接方式，其中最常用的就是桥接(bridge)。 这需要依赖内核的tun/tap模块的支持。
 
-研究发现，要想在qemu中适用网络功能，需要配置，阅读这篇文章：
-http://hi.baidu.com/lvgb/blog/item/a5e41adf0f2c1a14622798f5.html
+安装必要的工具包
+$ sudo apt-get install uml-utilities
+$ sudo apt-get install bridge-utils
 
-接下来研究，如何在ubuntu上配置tun呢？是否需要编译内核？
+首先执行
+$ ls -l /dev/net/tun 
+crw-rw-rwT 1 root root 10, 200 Jul 26 08:28 /dev/net/tun
 
-什么是tun
-阅读一下：http://www.51know.info/system_base/tun_tap.html
-检查内核是否有tun模块
-$ modinfo tun
-		ERROR: modinfo: could not find module tun
+如果上面的文件存在，这表明内核已经支持开启了tun支持，ubuntu12.04中，这个功能默认已经开启。如果这个文件不存在，则需要加载tun模块，并创建/dev/net/tun文件。
 
-首先来阅读：
-		虚拟网卡 TUN/TAP 驱动程序设计原理
-		http://linux.chinaunix.net/docs/2006-11-24/3296.shtml
+修改下面三个文件
+/etc/network/interfaces 
+添加
+/etc/qemu-ifup
+/etc/qemu-ifdown
 
-如何安装tun？
+修改 /etc/network/interfaces，笔者的文件如下：
+$ cat /etc/network/interfaces 
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# The primary network interface
+allow-hotplug eth0
+#iface eth0 inet dhcp
+iface eth0 inet manual
+
+auto br0
+iface br0 inet dhcp
+   bridge_ports eth0
+
+默认情况下，当qemu使用tap设备时，会执行/etc/qemu-ifup和/etc/qemu-ifdown这两个脚本。
+我们需要创建这两个脚本，然后为它们加上可执行权限(使用chmod +x)，然后将它们放在/etc/目录下。 
+
+创建/etc/qemu-ifup 脚本，内容如下所示
+$ cat /etc/qemu-ifup
+#!/bin/sh
+
+echo sudo tunctl -u $(id -un) -t $1
+sudo tunctl -u $(id -un) -t $1
+
+echo sudo ifconfig $1 0.0.0.0 promisc up
+sudo ifconfig $1 0.0.0.0 promisc up
+
+echo sudo brctl addif br0 $1
+sudo brctl addif br0 $1
+
+echo brctl show
+brctl show
+
+创建/etc/qemu-ifdown脚本，如下所示
+$ cat /etc/qemu-ifdown
+#!/bin/sh
+
+echo sudo brctl delif br0 $1
+sudo brctl delif br0 $1
+
+echo sudo tunctl -d $1
+sudo tunctl -d $1
+
+echo brctl show
+brctl show
+
+5. 运行带有网络功能的mini2440-qemu
+
+重启计算机，使/etc/network/interfaces的配置生效。
+$ qemu -M mini2440 -mtdblock u-boot.nand -serial stdio -net nic,vlan=0 -net tap,vlan=0,ifname=tap0
+
+如果出现如下信息：
+warning: could not configure /dev/net/tun: no virtual network emulation
+Could not initialize device 'tap'
+
+那么先手动执行如下命令
+$ /etc/qemu-ifup
+注意：不可使用sudo执行上述命令
+
+此时就可以顺利进入uboot了，然后
+uboot > dhcp 
+修改  serverip
+
+PC主机启动 tftp & nfs
+此时uboot中就可以正常使用tftp和nfs了。
+
+6. 更进一步：
+实际上，友善之臂官方网站提供的Linux内核以及文件系统，我们完全可以使用mini2440-qemu开启，笔者这里暂不介绍。
+
+什么是tun:
+http://www.51know.info/system_base/tun_tap.html
+http://linux.chinaunix.net/docs/2006-11-24/3296.shtml
 
 prife@smart:~/projects/git/uboot-mini2400$ qemu -M mini2440 -serial stdio -mtdblock u-boot-nand2k.bin -net nic,vlan=0 -net tap,vlan=0,ifname=tap0
 warning: could not configure /dev/net/tun: no virtual network emulation
 Could not initialize device 'tap'
 
-因为 $ sudo modprob tun 没有报错，我假定tun已经者却加载
+http://code.google.com/p/mini2440/w/list
 
-prife@smart:/lib/modules$ sudo tunctl -t tap0 -u prife
-[sudo] password for prife: 
-Set 'tap0' persistent and owned by uid 1000
+补充说明：
+http://www.arm9home.net/simple/index.php?t15864.html
+http://project4fun.com/node/33
 
-接下来的操作为：
-在建立两个脚本,分别为qemu-ifup, qemu-ifdown
-qemu-ifup 脚本
-		#!/bin/sh
-		echo "Excuting qemu-ifup"
-		ifconfig $1 10.0.0.1
-qemu-ifdown脚本
-		#!/bin/sh
-		echo "Close tap!"
-		sudo ifconfig $1 10.0.0.1 down
-
-并给它们都用chmod+x加上可执行权限。
-
-$ qemu-system-arm -M mini2440 -serial stdio -mtdblock ./mini2440_nand128.bin -usb -usbdevice keyboard -usbdevice mouse -net nic,vlan=0 -net tap,vlan=0,ifname=tap0 script=./qemu-ifup,downscript=./qemu-ifdown
-
-		/etc/qemu-ifup: could not launch network script
-		Could not initialize device 'tap'
-
-囧，现在的症状下面的症状完全一样了。
-http://blog.csdn.net/coolbacon/article/details/6252938
-如果如这里所说，是uboot代码存在bug的话，那么为什么这里
-http://www.cnblogs.com/jinmu190/archive/2011/03/21/1990698.html
-可以操作呢？
-
-prife@smart:~/projects/git/mini2440-qemu/mini2440$ ifconfig tap0 10.0.0.1
-SIOCSIFADDR: 权限不够
-SIOCSIFFLAGS: 权限不够
-
-注意到mini2440_start.sh在这个脚本加入了sudo命令！
-
-prife@smart:~/projects/git/mini2440-qemu/mini2440$ sudo ./qemu-ifup tap0
-		Excuting qemu-ifup
-prife@smart:~/projects/git/mini2440-qemu/mini2440$ sudo ./qemu-ifdown tap0
-		close tap
-
-可以看到这两个脚本是完全正确的。
-看来真的如csdn那个博客所说，qemu的net.c有问题？？
-
-先来试试他的修改吧。
-prife@smart:~/projects/git/mini2440-qemu/mini2440$ sudo cp qemu-if* /etc/
-prife@smart:~/projects/git/mini2440-qemu/mini2440$ cd ..
-prife@smart:~/projects/git/mini2440-qemu$ ls /etc/qemu-if
-qemu-ifdown  qemu-ifup    
-prife@smart:~/projects/git/mini2440-qemu$ mini2440/mini2440_start.sh 
-Starting in mini2440
-
-sudo mini2440/../arm-softmmu/qemu-system-arm -M mini2440 -serial stdio -mtdblock mini2440/mini2440_nand128.bin -usb -usbdevice keyboard -usbdevice mouse -net nic,vlan=0 -net tap,vlan=0,ifname=tap0 script=./qemu-ifup,downscript=./qemu-ifdown
-error:-1 2 8 /etc/qemu-ifup tap0
-Excuting qemu-ifup
-qemu: could not open disk image script=./qemu-ifup,downscript=./qemu-ifdown
-
-上面的返回值为2，这表示
-#define ENOENT   2 /* No such file or directory */
-
-所以只要简单的将qemu-ifup和qemu-ifdown脚本复制到/etc目录下，再次运行，这次爆的错误不同了。
-
-sudo /home/prife/projects/git/mini2440-qemu/arm-softmmu/qemu-system-arm -M mini2440 -serial stdio -mtdblock mini2440/mini2440_nand128.bin -usb -usbdevice keyboard -usbdevice mouse -net nic,vlan=0 -net tap,vlan=0,ifname=tap0 script=./qemu-ifup,downscript=./qemu-ifdown
-
---------------------------------------------------------------------------------
-我知道原因了！当加入sudo以后，路径就变了，导致无法找到命令！！！！！
-这就是为什么出现/etc/qemu-ifup的原因！
-
-
-思考，为什么qemu会不停的爆浮点（核心转储存），我才测是我改动了qemmu的config里的编写选项，这次不改这一项，尝试更换工具链
-
+参考：
+http://forums.debian.net/viewtopic.php?f=5&t=67398
 --------------------------------------------------------------------------------
 bare-metal: 裸机
 命名规则
@@ -218,63 +263,7 @@ arm-none-linux-gnueabi = ARM architecture, no vendor, linux OS, and the gnueabi 
 
 The arm-eabi is alike you say, used for Android native apps.
 
---------------------------------------------------------------------------------
 更换工具后成功：当前的工具链版本为：
 arm-2010q1-188-arm-none-eabi.bin
 20110314 arm-none-eabi.bin 和 arm-none-linux-gnueabi.bin都会爆EABI version 0错误
-
-更换了编译器之后，依然会不停的包浮点数例外（核心已转储）
-
-其他文章一概不看了，再看下面这篇！
-http://code.google.com/p/mini2440/w/list
-
-
-现在怀疑是桥接没有弄对：
-sudo apt-get install bridge-utils
-
-
-查看如下4篇文档
-kvm-中文ubuntu论坛 
-   http://forum.ubuntu.org.cn/viewtopic.php?f=65&t=154792
-qemu nfs on Fedora14 
-   http://webcache.googleusercontent.com/search?q=cache:2AJMClzBAmQJ:facetlife.blogspot.com/2011/01/qemu-mini2440-nfs.html+mini2440+qemu&cd=10&hl=zh-CN&ct=clnk
-
-qemu on debain
-		http://www.thomaskho.com/blog/2006/02/qemu-and-the-network-bridge/
-
-补充说明：
-http://www.arm9home.net/simple/index.php?t15864.html
-http://project4fun.com/node/33
-
-2012/07/12 02:36:29
-qemu网络搞定！ 浮点例外的崩溃问题修正！
-
-参考：
-http://forums.debian.net/viewtopic.php?f=5&t=67398
-
-注意，在ubuntu 12.04上 tun默认就是开启的，因此不需要编译内核！
-只要 /dev/net/tun存在即可！
-$ ls -l /dev/net/tun
-
-安装必要的工具包
-sudo apt-get install tunctl 
-sudo apt-get install bridge-utils
-
-修改下面三个文件
-/etc/network/interfaces 
-添加
-/etc/qemu-ifup
-/etc/qemu-ifdown
-
-$ qemu -M mini2440 -mtdblock u-boot.nand -serial stdio \
-	-net nic,vlan=0 -net tap,vlan=0,ifname=tap0
-warning: could not configure /dev/net/tun: no virtual network emulation
-
-那么执行 sudo /etc/qemu-ifup一下。
-然后再执行上面的命令即可！
-
-此时就可以顺利进入uboot了，然后
-uboot >dhcp 
-修改  serverip
-主机启动 tftp & nfs
-此时uboot中就可以正常使用tftp和nfs了。
+--------------------------------------------------------------------------------
