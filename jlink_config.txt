@@ -1,0 +1,179 @@
+概述：本文描述，如何在linux系统上使用jlink，实现对嵌入式设备固件烧录，在线调试的配置。
+
+系统信息：
+ubuntu 12.04 LTS
+作者：prife @ 2012/07/25 13:44:06
+
+1. 安装依赖
+Requirements
+============
+libusb, libreadline, 一般来说这俩都已经安装了
+
+检查这两库是否安装
+prife@smart:~/git/documents$ sudo dpkg -l | grep "libusb"
+	ii  libusb-0.1-4                           2:0.1.12-20                             userspace USB programming library
+	ii  libusb-1.0-0                           2:1.0.9~rc3-2ubuntu1                    userspace USB programming library
+	ii  libusb-dev                             2:0.1.12-20                             userspace USB programming library development files
+	ii  libusbmuxd1                            1.0.7-2                                 USB multiplexor daemon for iPhone and iPod Touch devices - library
+
+prife@smart:~/git/documents$ sudo dpkg -l | grep "libreadline"
+	ii  libreadline5                           5.2-11                                  GNU readline and history libraries, run-time libraries
+	ii  libreadline6                           6.2-8  
+可见，在笔者的系统上，这两个软件包已经安装。
+
+如果你的系统没有安装，则使用如下命令安装
+$ sudo apt-get -install libusb-1.0-0 libusb-dev
+$ sudo apt-get install libreadline6 libreadline6-dev
+
+2. 安装jlink for linux
+Installing the shared library
+=============================
+下载jlink for linux软件包
+注意：请不要从segger官方网站下载最新版jlink linux包（jlink 4.42及以后版本），因为目前的版本会导致jlink变砖头。
+这里可以使用笔者提供的jlink v4.36版，在这里
+https://github.com/prife/documents/blob/master/JLink_Linux_V436f.tgz
+
+$ tar xvf JLink_Linux_V436f.tgz
+
+将jlink linux需要的共享库复制到系统库目录
+$ sudo  cp libjlinkarm.so.* /usr/lib
+
+更新库信息
+$ sudo ldconfig
+
+为了让普通用户（非root用户）可以使用jlink
+$ sudo cp 45-jlink.rules /etc/udev/rules.d/
+
+将普通用户（笔者的为prife）加入到 plugdev组中
+查看一下plugdev是否存在，可以使用如下命令
+$ cat /etc/group | grep plugdev
+
+如果plugdev不存在，则执行如下命令创建此组,
+$ sudo groupadd plugdev 
+
+将用户加入到plugdev分组中
+$ sudo usermod -a -G plugdev <Username>
+
+3. 测试
+链接好硬件，笔者这里使用的是stm32单片机，将jlink与开发板链接好以后，
+在jlink安装目录下执行
+$ ./JlinkExe
+
+EGGER J-Link Commander V4.36f ('?' for help)
+Compiled Oct 24 2011 12:37:47
+DLL version V4.36f, compiled Oct 24 2011 12:37:43
+Firmware: J-Link ARM V8 compiled Dec  6 2011 18:57:44
+Hardware: V8.00
+S/N: 12345678 
+Feature(s): RDI,FlashDL,FlashBP,JFlash,GDBFull 
+VTarget = 3.293V
+Info: Found SWD-DP with ID 0x2BA01477
+Info: TPIU fitted.
+Info: ETM fitted.
+Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+Info: Found Cortex-M4 r0p1, Little endian.
+Found 1 JTAG device, Total IRLen = 4:
+Cortex-M4 identified.
+JTAG speed: 100 kHz
+J-Link>
+
+如果出现如上配置，则表明安装成功，接下来我们编写一个脚本，实现一键烧录程序
+
+4. 实现jlink烧录
+================================
+将下列语句保存成 jlink_flash.txt,他就是可以用于烧录stm32单片机的脚本
+  si 1
+  h
+  speed 4800
+  exec device = STM32F103VC
+  loadbin rtthread.bin 0x8000000
+  r
+  g
+  qc
+
+注意：
+1) si 1表示这是使用的SWD接口方式
+2) exec device = STM32F103VC,这里需要填写合适的芯片，例如，如果是stm32f407则需要修改为STM32F407VG
+3) rtthread.bin即为要烧录的bin文件，读者需要根据自己的实际烧录的文件修改
+
+为了操作上的简单，笔者自己创建了一个～/tools/目录，并将此目录加入到系统PATH中，然后将JlinkExe复制到其中，读者可以根据自己的喜好自行决定JlinkExe放置位置。
+
+打开任意一个stm32工程目录，将上面的脚本保存成jlink_flash.txt放在此目录下，编译生成bin文件，在命令行中执行如下命令即可完成烧录
+$ JlinkExe jlink_flash.txt
+
+如果每次都需要手动输入命令会觉得非常繁琐，可以将上面的命令保存成脚本，如下所示
+
+flash.sh
+--------------------------------------------------
+#!/bin/bash
+JlinkExe jlink_flash.txt
+--------------------------------------------------
+
+为这个脚本添加可执行权限
+$ chmod +x flash.sh
+
+$ ./flash.sh 即可一键烧录
+
+PS：在每个stm32工程中放置 flash.sh和jlink_flash.txt，既可以实现快速烧录了。
+
+5. jlink实现gdb命令行调试
+================================
+jlink软件包中提供了JLinkGDBServer，借助它我们可以实现在线调试功能。
+
+其实主要是编写适当的脚本，如笔者的脚本为jgdbserver（需要可执行权限）
+prife@smart:~/tools$ cat jgdbserver 
+#!/bin/bash
+JLinkGDBServer -cr -endian little -if swd
+
+说明: 关于启动参数的含义请参考UM08005_JLinkGDBServer.pdf
+
+然后在任意一个stm32目录下，首先编译生成elf/axf文件
+放置如下脚本（不需要可执行权限，gdb启动后会自动使用）：
+
+prife@smart:~/project/stm32f407$ cat .gdbinit
+
+#*************************************************
+#
+#  Connect to J-Link and debug application in sdram on 2440
+#
+# Connect to the J-Link gdb server
+    target remote localhost:2331
+    file rtthread-stm32f4xx.axf
+
+    monitor interface swd
+
+# Enable flash download and flash breakpoints.
+# Flash download and flash breakpoints are features of
+# the J-Link software which require separate licenses 
+# from SEGGER.
+# Select flash device
+    monitor flash device = STM32F407VG
+# Enable FlashDL and FlashBPs
+    #monitor flash download = 1
+    monitor flash breakpoints = 1
+# Clear all pendig breakpoints
+    monitor clrbp
+# Set gdb server to little endian
+    #monitor endian little
+# Set speed to 5 kHz
+    monitor speed 4800
+# Reset the target
+    monitor reset 1
+    break main
+    #break dfs_uffs_mount
+    #b rt_init_thread_entry
+	#c
+
+打开一个终端窗口，输入我刚才创建的脚本启动JlinkGDBServer，
+$ jgdbserver
+
+然后再打开一个终端窗口，切换目录到stm32目录下，执行
+prife@smart:~/project/stm32f407$ arm-none-eabi-gdb
+注意，需要保证此目录下有.gdbinit脚本！
+此时可以看到如下gdb正常加载，由于刚刚在.gdbinit文件中，设置了断点，因此输入c，就会跳转到main函数入口，再尝试
+list，即可列出源码。
+
+关于GDB的用法请自行搜索。
+
+6：参考资料
+UM08005_JLinkGDBServer.pdf
