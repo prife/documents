@@ -1,0 +1,35 @@
+host: 12.04 32bit 
+
+reference
+http://www.dannytsang.co.uk/index.php/ubuntu-12-04-dhcp-server/#
+http://wiki.openelec.tv/index.php?title=Network_Boot_-_NFS#Configure_DHCP
+
+文章目的：在ubuntu系统上配置DHCP服务器，笔者的笔记本电脑有有两块网卡，
+eth0 ---有线网卡
+wlan0 --无线网卡
+
+安装DHCP服务器以后，PC可以上网，同时又可以作为一台路由器（虽然只有一个网口）共其他使用，比如mini2440开发板。
+
+1. install
+$ sudo apt-get install dhcp3-server
+这个包还有另外一个名字 isc-dhcp-server，因此采用下面的安装方式也可以
+$ sudo apt-get install isc-dhcp-server
+
+2. configration
+
+$ vim /etc/default/isc-dhcp-server
+
+将INTERFACES=""
+修改为INTERFACES="eth0"
+说明：在笔者的机器上因为配置了桥接，因此这里需要填入 "br0"
+
+$ vim /etc/dhcp/dhcpd.conf
+
+$ sudo cp /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.old
+
+3. run dhcp server
+$ sudo service isc-dhcp-server restart
+
+4. 将mini2440板子与PC机连接，然后启动u-boot，
+u-boot> dhcp
+u-boot可以正确获取通过dhcp得到配置网络。同时PC机也可以通过无线网络上网。
