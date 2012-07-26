@@ -167,7 +167,6 @@ linux下没有太好用的svn gui客户端，因此这里直接使用svn。
 
 安装git
 
-
 安装USB转串口驱动 && 安装串口工具,  putty?? 
 ubuntu 12.04中默认就自带了ch341的串口驱动,因此不需要安装。
 http://xiyanyu.blogbus.com/logs/110306277.html
@@ -186,56 +185,17 @@ prife@smart:~/projects/svn/rtt/trunk/bsp/stm32f10x_test$ dmesg | grep "ch341"
  将配置保存为默认，然后从菜单中选择Exit后，就会和板子上进行串口通信了
  如果想要退粗minicom，按下 CTRL+A键，后再低栏会出现提示，在按Z键，弹出一个对话框，按下x，即退出minicom
 
-安装jlink under linux版
-挂网下载4.50版本（不确定是否会导致固件升级而不可用）
-
-EGGER J-Link Commander V4.50i ('?' for help)
-Compiled Jun 22 2012 19:00:38
-Can not connect to J-Link via USB.
-
-尝试重新安装libusb-dev试试。
-
-(1)安装libusb
-sudo apt-get install libusb-dev
-(2)安装
- sudo JLinkExe后，自动升级了固件，而不使用sudo时则没有升级固件。
-
-(3) jlink变砖头了。
-
-ubutu上参考网页：
-http://www.tincantools.com/wiki/OpenOCD_Ubuntu_Package
- sudo openocd -f /usr/share/openocd/scripts/target/stm32f1x.cfg -f /usr/share/openocd/scripts/interface/jlink.cfg 
-
-
-
 12. 学习deb包编译（这个没有必要学习，浪费时间,这样可以通过ppa使用最新的deb包么？）
 
-
 13. 安装多线程下载工具
- http://www.douban.com/group/topic/19790695/
- http://www.oschina.net/news/18527/uget-1-8-0-aria2
+http://www.douban.com/group/topic/19790695/
+http://www.oschina.net/news/18527/uget-1-8-0-aria2
  
 sudo add-apt-repository ppa:plushuang-tw/uget-stable
 sudo apt-get update
 sudo apt-get install uget
 
 14. 解决温度过高问题。
-──────────────────────────┤ 正在设定 hddtemp ├────────────────────────────┐  
- │                                                                           │  
-  │ The hddtemp program can be run as a daemon, listening on port 7634 for    │  
-   │ incoming connections. It is used by some software such as gkrellm to get  │  
-    │ the temperature of hard drives.                                           │  
-	 │                                                                           │  
-	  │ You have the option of starting the hddtemp daemon automatically on       │  
-	   │ system boot. If in doubt, it is suggested to not start it automatically   │  
-	    │ on boot.                                                                  │  
-		 │                                                                           │  
-		  │ This setting can be modified later by running 'dpkg-reconfigure           │  
-		   │ hddtemp'.                                                                 │  
-		    │                                                                           │  
-			 │ Should the hddtemp daemon be started at boot?                             │  
-			  │                                                                           │  
-			   │                    <是>                        <否>    
 
 http://ubuntudaily.net/2012/04/use-psensor-to-monitor-temperatures-in-ubuntu			   
 
@@ -269,12 +229,39 @@ sudo apt-get install wireshark
 
 19. 配置nautilus，增加一个快速打开命令行的工具
 参考: http://www.ubuntuhome.com/nautilus-terminal-gui-meets-cli.html
-
+1)nautilus-terminalo
  sudo add-apt-repository ppa:flozz/flozz
  sudo apt-get update && sudo apt-get install nautilus-terminalo
-重启
-打开终端，输入‘nautilus -q’ 重启Nautilus
-使用：
-Nautilus终端的理念很简单，我惊奇于为什么过去人没有去实现它。它将终端集成在主要导航栏的下面，你可以在设置中定制出自己的终端，按下F3键，你还可以获得一个简洁的独立终端。
+打开终端，输入`nautilus -q'重启Nautilus
 
-上面的不好用，sudo apt-get install nautilus-open-terminal, 还是整个更好用
+2) nautilus-open-terminal
+sudo apt-get install nautilus-open-terminal, 更好用，这个软件会在命令行右键中添加“在当前路径中打开命令行”的菜单项。
+
+20. 配置文件系统
+
+先要看支持XFS文件系统不。
+代码:
+sudo mkfs[tab][tab]
+
+ubuntu支持的文件系统：
+mkfs mkfs.cramfs mkfs.ext3 mkfs.ext4dev mkfs.msdos
+mkfs.bfs mkfs.ext2 mkfs.ext4 mkfs.minix mkfs.vfat
+安装XFS文件系统支持
+代码: apt-get install xfsprogs xfsdump
+
+参考：ubuntu wiki
+
+分区工具
+sudo apt-get install gparted
+http://www.ubuntusoft.com/ubuntu-partition-under-the-master-gparted.html
+
+21. 配置虚拟机
+下载virtul box的ubuntu版本的deb包
+使用下面命令安装deb软件包
+sudo dpkg -i xxx.deb
+为了能让普通用户运行，执行
+sudo gpasswd vboxusers -a 用户名
+
+23. 图片编辑软件
+ 1)gimp（photoshop级别的）
+ 2)fotoxx(小巧的图片编辑软件）

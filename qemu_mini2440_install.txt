@@ -12,7 +12,7 @@ $ git clone http://repo.or.cz/w/qemu/mini2440.git
 $ git checkout -b myqemu
 创建一个myqemu分支用于打补丁，关于git详细请自行goolge。
 
-$ 打上如下补丁，或者手动修改。
+打上如下补丁，或者手动修改。
 diff --git a/sdl.c b/sdl.c
 index 178b553..bdf412b 100644
 --- a/sdl.c

@@ -1,0 +1,10 @@
+$ sudo apt-get install get
+
+默认情况下，ubuntu下的终端中，git没有颜色,可以使用如下命令给git配色
+	$ git config --global color.status auto  
+	$ git config --global color.diff auto  
+	$ git config --global color.branch auto  
+	$ git config --global color.interactive auto  
+
+$ sudo apt-get install git-gui
+$ 在repo目录中执行 gitk即可打开gui前端，可以方便的浏览更新记录，分子关系

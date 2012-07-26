@@ -1,0 +1,23 @@
+DM9000学习笔记.txt
+
+应用笔记P14页，TXD[2:0]没有看懂
+
+strapping pin:
+我的理解是通过外部跳线连接决定输入电平，达到选择内部多功能选择的目的。这类pin往往有丰富的复用功能，比如在上电复位期间选择某种功能，但正常工作时又定义为其他用法。
+這個辭彙在IC的datasheet中經常提及.按照我們中文理解可以認為是detect(偵測)pin的意思.例如在這種IC pin腳外通過不同阻值的電阻組合(上拉或下拉)可以有幾種訊號輸入,代表不同的意義,從而使IC打開其內部不同的功能模塊.
+
+参考：http://forum.eet-cn.com/FORUM_POST_10003_1100006281_0.HTM
+
+
+疑问：AP P7 图2.1上，SD0-31,但是在datasheet上，只有SD0到SD15。
+解决：AP P11 图2.3上，SD16-SD31是由 56,53,52,51,50,49....等引脚复用的，具体可以参考DM9000的datasheet查看。
+
+当32bit模式，其中SD53-SD50正好是TXD3-TXD0。
+
+P14页 When SA9 and SA8 are high, SA7 and AEN are low, and SA6 ~ 4 are
+matched with strap pins TXD[2:0], the DM9000 is selected.
+
+这个意思时说，当SA6-SA4的电平与 TXD[2:0]的值一致时，DM9000选中
+
+疑问：是如何通过地址区分是ADDR_PORT还是DATA_PORT
+解决：参见图AP手册P10 图2.2. 通过将CMD引脚接到ISA BUS的地址线A2实现的。

@@ -95,3 +95,172 @@ U-Boot> go 30a00000 nfs:netbsd
 现在有两个思路，第一，生成一个elf格式的boot2440，第二找出netbsd的实际加载地址
 
 新问题：如何生成NetBsd需要的bootloader？采用什么命令？
+
+
+$ cd /usr/src
+$ ./build.sh -U -u -m evbarm release
+
+trib/sets/makesums -t /usr/src/obj/releasedir/evbarm/binary/kernel '*.gz'
+make release started at:  Sat Jul 14 09:45:33 CST 2012
+make release finished at: Sat Jul 14 14:04:57 CST 2012
+===> Successful make release
+===> build.sh ended:      Sat Jul 14 14:04:57 CST 2012
+===> Summary of results:
+	 build.sh command:    ./build.sh -U -u -m evbarm release
+	 build.sh started:    Sat Jul 14 09:45:31 CST 2012
+	 NetBSD version:      6.0_BETA2
+	 MACHINE:             evbarm
+	 MACHINE_ARCH:        arm
+	 Build platform:      Linux 3.2.0-26-generic-pae i686
+	 HOST_SH:             /bin/sh
+	 TOOLDIR path:        /usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686
+	 DESTDIR path:        /usr/src/obj/destdir.evbarm
+	 RELEASEDIR path:     /usr/src/obj/releasedir
+	 Updated makewrapper: /usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686/bin/nbmake-evbarm
+	 Successful make release
+	 build.sh ended:      Sat Jul 14 14:04:57 CST 2012
+===> .
+
+
+
+===> Tools built to /usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686
+===> build.sh ended:      Mon Jul  9 22:25:38 CST 2012
+===> Summary of results:
+	 build.sh command:    ./build.sh -m evbarm tools
+	 build.sh started:    Mon Jul  9 22:08:33 CST 2012
+	 NetBSD version:      6.0_BETA2
+	 MACHINE:             evbarm
+	 MACHINE_ARCH:        arm
+	 Build platform:      Linux 3.2.0-26-generic-pae i686
+	 HOST_SH:             /bin/sh
+	 No $TOOLDIR/bin/nbmake, needs building.
+	 Bootstrapping nbmake
+	 TOOLDIR path:        /usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686
+	 DESTDIR path:        /usr/src/obj/destdir.evbarm
+	 RELEASEDIR path:     /usr/src/obj/releasedir
+	 Created /usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686/bin/nbmake
+	 Updated makewrapper: /usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686/bin/nbmake-evbarm
+	 Tools built to /usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686
+	 build.sh ended:      Mon Jul  9 22:25:38 CST 2012
+===> .
+prife@smart:/usr/src$ 
+
+编译内核
+#      link  MY_2440/netbsd
+/usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686/bin/arm--netbsdelf-ld -Map netbsd.map --cref -T ldscript -X -o netbsd ${SYSTEM_OBJ} ${EXTRA_OBJ} vers.o
+   text	   data	    bss	    dec	    hex	filename
+1970372	3192832	  97600	5260804	 504604	netbsd
+/usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686/bin/arm--netbsdelf-objcopy -S -O srec netbsd netbsd.srec
+/usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686/bin/arm--netbsdelf-objcopy -S -O binary netbsd netbsd.bin
+
+生成的内核大小为：
+prife@smart:/usr/src/sys/arch/evbarm/compile/MY_2440$ ls -lh netbsd netbsd.bin
+-rwxr-xr-x 1 prife prife 5.4M  7月  9 22:47 netbsd
+-rwxrwxr-x 1 prife prife 5.0M  7月  9 22:47 netbsd.bin
+
+
+接下来研究一下如何才能启动内核呢？内核是否可以直接启动呢？？？
+或者说netbsd的启动地址是多少呢？如何才能启动netbsd呢？？？？？？？
+
+
+制作内核
+
+prife@smart:~/work$ /usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686/bin/nbmake
+nbmake         nbmake-evbarm  nbmakefs       nbmakeinfo     nbmakewhatis
+prife@smart:~/work$ /usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686/bin/nbmakefs -s 3m -t ffs image sets/
+Calculated size of `image': 3145728 bytes, 76 inodes
+Extent size set to 8192
+image: 3.0MB (6144 sectors) block size 8192, fragment size 1024
+	using 1 cylinder groups of 3.00MB, 384 blks, 128 inodes.
+super-block backups (for fsck -b #) at:
+ 32,
+Populating `image'
+Image `image' complete
+prife@smart:~/work$ ls
+altroot  dev       etc    lib      libexec  rescue  sbin  stand  usr
+bin      disdu.sh  image  libdata  mnt      root    sets  tmp    var
+prife@smart:~/work$ ls -lh image 
+-rw-rw-r-- 1 prife prife 3.0M  7月 16 02:14 image
+prife@smart:~/work$ du -sh sets/
+2.8M	sets/
+prife@smart:~/work$ 
+
+
+prife@smart:~/work$ /usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686/bin/arm--netbsdelf-mdsetimage -sv netbsd_my image 
+got symbols from netbsd_my
+mapped netbsd_my
+copying image image into netbsd_my
+done copying image
+setting md_root_size to 3145728
+exiting
+prife@smart:~/work$ ls -lh netbsd_my
+-rwxr-xr-x 1 prife prife 5.4M  7月 16 02:43 netbsd_my
+prife@smart:~/work$ 
+
+
+prife@smart:~/tftp$ /usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686/bin/arm--netbsdelf-objcopy -S -O binary netbsd_my netbsd_ramdisk
+prife@smart:~/tftp$ ls -lh netbsd_ramdisk 
+-rwxrwxr-x 1 prife prife 5.0M  7月 16 02:50 netbsd_ramdisk
+
+
+
+/usr/src/obj/tooldir.Linux-3.2.0-26-generic-pae-i686/bin/nbmakefs -s 3m -t ffs disk ramdisk
+
+
+ssrtc0 at ssio0: RTC 
+clock: hz=100 stathz = 64 PCLK=50625000 prescaler=2 tc=24719
+boot device: <unknown>
+root on md0a dumps on md0b
+root file system type: ffs
+warning: no /dev/console
+panic: init died (signal 0, exit 1)
+Stopped in pid 1.1 (init) at    c0218d3c:       mov     r15, r14
+
+经过检查后发现是动态链接库中少放置了库文件。。
+
+修改ramdisk大小
+prife@smart:/usr/src/sys/arch/evbarm/conf$ vim INSTALL 
+prife@smart:/usr/src/sys/arch/evbarm/conf$ 
+
+=======================================================================================
+# ls -F
+ls -F
+.profile        kern/           sbin/           sysinstmsgs.fr  usr/
+bin/            libexec/        sysinst*        sysinstmsgs.pl  var/
+dev/            mnt/            sysinstmsgs.de  targetroot/
+etc/            mnt2/           sysinstmsgs.es  tmp/
+
+ls /bin
+cat   chmod dd    ed    ls    mv    pwd   rmdir stty
+chgrp cp    df    ln    mkdir pax   rm    sh    sync
+
+
+ls sbin/
+chown        halt         mount_cd9660 mount_nfs    route        umount
+dhcpcd       ifconfig     mount_ffs    newfs        rrestore
+disklabel    init         mount_kernfs ping         shutdown
+fsck         mknod        mount_mfs    reboot       slattach
+fsck_ffs     mount        mount_msdos  restore      swapctl
+
+# ls /usr/bin
+ls /usr/bin
+cu        gunzip    gzip      more      sed       tip
+ftp       gzcat     less      progress  tar       tset
+
+
+# ls libexec
+ls libexec
+dhcpcd-hooks        dhcpcd-run-hooks
+
+# ls /usr/sbin
+ls /usr/sbin
+
+编译文件静态程序
+ arm--netbsdelf-gcc --sysroot=/usr/src/obj/destdir.evbarm -static -o mytest print.c 
+
+00:60:6E:11:02:0F
+
+go 30A00000 mac=00:60:6E:11:02:0F tftp:netbsd
+
+go 30A00000 tftp:netbsd 
+
