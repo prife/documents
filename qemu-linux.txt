@@ -1,0 +1,65 @@
+搭建linux on qemu开发环境
+
+0. 安装qemu
+参考文档1- linux上安装qemu，并配置：
+https://github.com/prife/documents/blob/master/qemu_mini2440_install.txt
+参考文档2：配置linux上各项服务
+https://github.com/prife/documents/blob/master/ubuntu_mini2440.txt
+
+1. 下载linux源码,生成linux内核
+
+prife@smart:~/projects/git$ git clone git://repo.or.cz/linux-2.6/mini2440.git mini2440-kernel
+
+prife@smart:~/projects/git/mini2440-kernel$ make mini2440_defconfig ARCH=arm
+prife@smart:~/projects/git/mini2440-kernel$ make -j4 ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi- uImage
+
+编译开始 17:09
+结束时间 17.12
+
+"mkimage" command not found - U-Boot images will not be built
+Image arch/arm/boot/uImage is ready
+
+mkimage位于 uboot/tools/目录下
+
+2. 启动linux内核
+
+创建如下启动脚本
+#!/bin/bash
+export KK='/home/prife/projects/git/mini2440-kernel/arch/arm/boot/uImage'
+
+#!/bin/bash
+
+export KK='/home/prife/projects/git/mini2440-kernel/arch/arm/boot/uImage'
+
+/home/prife/projects/git/mini2440-qemu/arm-softmmu/qemu-system-arm \
+    -M mini2440 -kernel $KK -mtdblock u-boot.nand -serial stdio \
+    -net nic,vlan=0 -net tap,vlan=0,ifname=tap0 \
+    -usb -usbdevice keyboard -usbdevice mouse
+    #-show-cursor 
+
+此时会就会引导进入uboot控制台，输入bootm，即可启动linux内核映像。
+不过此时我们还缺乏根文件系统。
+
+3. 配置根文件系统
+1) NFS做根文件系统
+下载rootfs软件包
+http://code.google.com/p/learningmini2440/downloads/detail?name=rootfs_qtopia_qt4-20100816.tar.gz&can=2&q=
+
+解压之后。修改etc/init.d/rcS文件，将下面两行注释掉
+#/sbin/ifconfig lo 127.0.0.1
+#/etc/init.d/ifconfig-eth0
+
+启动uboot后，在控制台配置启动参数
+set bootargs noinitrd root=/dev/nfs rw nfsroot=121.49.118.29:/home/prife/rootfs ip=121.49.118.28:121.49.118.29::255.255.255.0 console=ttySAC0,115200
+然后执行 
+saveenv保存参数
+
+之后每次启动都不用再次输入，只要在uboot中输入
+bootm
+即可启动图形界面了。
+
+2) SD做根文件系统
+
+参考文献：
+http://www.cnblogs.com/jinmu190/archive/2011/03/21/1990698.html
+http://blog.csdn.net/star2523/article/details/7562210
