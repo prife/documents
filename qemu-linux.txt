@@ -14,7 +14,7 @@ prife@smart:~/projects/git/mini2440-kernel$ make mini2440_defconfig ARCH=arm
 prife@smart:~/projects/git/mini2440-kernel$ make -j4 ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi- uImage
 
 编译开始 17:09
-结束时间 17.12
+结束时间 17:12
 
 "mkimage" command not found - U-Boot images will not be built
 Image arch/arm/boot/uImage is ready
@@ -24,11 +24,8 @@ mkimage位于 uboot/tools/目录下
 2. 启动linux内核
 
 创建如下启动脚本
-#!/bin/bash
-export KK='/home/prife/projects/git/mini2440-kernel/arch/arm/boot/uImage'
 
 #!/bin/bash
-
 export KK='/home/prife/projects/git/mini2440-kernel/arch/arm/boot/uImage'
 
 /home/prife/projects/git/mini2440-qemu/arm-softmmu/qemu-system-arm \
