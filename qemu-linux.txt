@@ -50,10 +50,39 @@ http://code.google.com/p/learningmini2440/downloads/detail?name=rootfs_qtopia_qt
 set bootargs noinitrd root=/dev/nfs rw nfsroot=121.49.118.29:/home/prife/rootfs ip=121.49.118.28:121.49.118.29::255.255.255.0 console=ttySAC0,115200
 然后执行 
 saveenv保存参数
-
 之后每次启动都不用再次输入，只要在uboot中输入
 bootm
 即可启动图形界面了。
+
+说明：启动之后可能会看到如下信息：
+Warning: unable to open an initial console.
+好吧，这说明rootfs还缺点东西。先把qemu关了
+在rootfs目录下，进入dev目录，手动创建如下节点：
+$ sudo mknod -m 660 null c 1 3
+$ sudo mknod -m 660 console c 5 1
+然后重启qemu。就可以看到如下启动信息：
+...
+...
+host=121.49.118.28, domain=, nis-domain=(none),
+    bootserver=121.49.118.29, rootserver=121.49.118.29, rootpath=
+Looking up port of RPC 100003/2 on 121.49.118.29
+Looking up port of RPC 100005/1 on 121.49.118.29
+VFS: Mounted root (nfs filesystem) on device 0:13.
+Freeing init memory: 128K
+mount: mounting none on /proc/bus/usb failed: No such file or directory
+[30/Sep/2012:22:55:43 +0000] boa: server version Boa/0.94.13
+[30/Sep/2012:22:55:43 +0000] boa: server built Jul 26 2010 at 15:58:29.
+[30/Sep/2012:22:55:43 +0000] boa: starting server pid=759, port 80
+                       
+open device leds: No such file or directory
+
+Please press Enter to activate this console. 
+
+[root@FriendlyARM /]# ls
+_new.       etc         linuxrc     opt         sbin        usr
+bin         home        mnt         proc        sys         var
+dev         lib         netbsd.elf  root        tmp         www
+[root@FriendlyARM /]#
 
 2) SD做根文件系统
 

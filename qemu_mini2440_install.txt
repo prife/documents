@@ -222,7 +222,7 @@ warning: could not configure /dev/net/tun: no virtual network emulation
 Could not initialize device 'tap'
 
 那么先手动执行如下命令
-$ /etc/qemu-ifup
+$ /etc/qemu-ifup tap0
 注意：不可使用sudo执行上述命令
 
 此时就可以顺利进入uboot了，然后
@@ -231,6 +231,26 @@ uboot > dhcp
 
 PC主机启动 tftp & nfs
 此时uboot中就可以正常使用tftp和nfs了。
+
+为了方便操作，笔者创建了一个简单的脚本，如下：
+prife@smart:~/tftp$ cat start 
+/etc/qemu-ifup tap0
+sudo service tftpd-hpa restart
+sudo /etc/init.d/nfs-kernel-server restart
+
+以及qemu启动脚本脚本 runlinux.sh
+prife@smart:~/tftp$ cat runlinux.sh 
+#!/bin/bash
+
+export KK='/home/prife/projects/git/mini2440-kernel/arch/arm/boot/uImage'
+
+/home/prife/projects/git/mini2440-qemu/arm-softmmu/qemu-system-arm \
+	-M mini2440 -kernel $KK -mtdblock u-boot.nand -serial stdio \
+	-net nic,vlan=0 -net tap,vlan=0,ifname=tap0 \
+	-usb -usbdevice keyboard -usbdevice mouse
+	#-show-cursor 
+
+每次启动ubuntu后，需要执行一次start脚本，之后启动qemu，只要执行 runlinux.sh即可。
 
 6. 更进一步：
 实际上，友善之臂官方网站提供的Linux内核以及文件系统，我们完全可以使用mini2440-qemu开启，笔者这里暂不介绍。
