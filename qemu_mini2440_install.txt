@@ -43,18 +43,24 @@ $ make -j4
 prife@smart:~/projects/git/mini2440-qemu$ ls -l arm-softmmu/qemu-system-arm
 -rwxrwxr-x 1 prife prife 8455432  7月 11 19:05 arm-softmmu/qemu-system-arm
 
-2. 编译uboot-mini2440
+2. u-boot
+我们既可以使用友善之臂官方提供的编译好的u-boot二进制，也可以自己基于源码编译
 
-我们既可以使用友善之臂官方提供的编译好的u-boot二进制，也可以自己基于源码编译。
 2.1 使用官方提供的u-boot
 http://www.friendlyarm.net/downloads
 
-2.2 
+2.2 手动编译uboot-mini2440
+首先获取uboot源码
+http://repo.or.cz/w/u-boot-openmoko/mini2440.git
+
+$ git clone git://repo.or.cz/u-boot-openmoko/mini2440.git  uboot-mini2400
+$  ./configure --target-list=arm-softmmu
+$  make -j4
 最后链接时遇到错误
 arm-none has EABI version 5, but target u-boot has EABI version 0
 参考这里得知：
 ~/documents/uboot-DULG-v38b.pdf  第143页知道原因
-解决方法: patch如下所示。
+解决方法: patch如下。
 
 diff --git a/Makefile b/Makefile
 index 21c5f3f..f184b93 100644
