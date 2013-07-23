@@ -1,0 +1,49 @@
+ubuntu/Debian/Mint
+
+0. 获取源代码
+获取RTT-Thread源代码
+可以使用git clone，也可以去github网站上下载离线zipb包。这里介绍git clone方法
+
+下载RT-Thread源码包（其中不含RTGUI源代码）
+git clone https://github.com/RT-Thread/rt-thread.git
+
+下载RTGUI源代码包
+git clone https://github.com/RT-Thread/RTGUI.git
+
+将RTGUI/components/rtgui目录配置为环境变量，变量名为RTT_RTGUI
+也就是说，在~/.bashrc或者~/.profile中，增加如下代码
+RTT_RTGUI=~/git/RTGUI/components/rtgui
+export RTT_RTGUI
+注意笔者的git clone的RTGUI是在 ～/git目录下，添加的路径是RTGUI/components/rtgui
+然后执行source ~/.bashrc或者 source ~/.profile使变量定义生效。
+
+
+1. 安装python, scons
+ 一般来说python都已经安装过了。所以不必手动安装。
+ sudo apt-get install scons
+
+2. 安装编译工具链
+
+arm-none-eabi 工具链
+http://pan.baidu.com/share/link?shareid=112319&uk=4264488348#dir/path=%2FGCC%E7%BC%96%E8%AF%91%E5%99%A8
+选择 for linux.zip版本。解压后安装。
+
+安装完毕后配置PATH，将arm-none-eabi-gcc所在的路径加入到PATH中。
+
+3. 安装SDL库
+sudo apt-get install libsdl1.2-dev
+
+4. 编译运行
+
+进入第0步配置的RT-Thread源码目录，在bsp/simulator目录下
+修改 rtconfig.py 中的第6行为
+CROSS_TOOL='gcc'
+保存关闭rtconfig.py文件
+
+然后在 simulator目录下执行
+scons -j4
+其中4表示4线程编译，你也可以根据自己机器的配置选择 -j2, -j8等（一般N为2倍CPU核心数）
+
+不出现以外，就可以正确编译链接，在当前目录下生成rtthread程序。
+
+./rtthread即可运行。
