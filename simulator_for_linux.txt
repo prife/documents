@@ -22,13 +22,10 @@ export RTT_RTGUI
  一般来说python都已经安装过了。所以不必手动安装。
  sudo apt-get install scons
 
-2. 安装编译工具链
+2. 安装gcc
+执行 gcc --version，如果已经存在gcc，则不需要安装。
+sudo apt-get install build-essential
 
-arm-none-eabi 工具链
-http://pan.baidu.com/share/link?shareid=112319&uk=4264488348#dir/path=%2FGCC%E7%BC%96%E8%AF%91%E5%99%A8
-选择 for linux.zip版本。解压后安装。
-
-安装完毕后配置PATH，将arm-none-eabi-gcc所在的路径加入到PATH中。
 
 3. 安装SDL库
 sudo apt-get install libsdl1.2-dev
