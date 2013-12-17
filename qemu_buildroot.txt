@@ -1,0 +1,116 @@
+buildroot
+去官方网站下载最新的源代码包，当前测试版本为2013.11。
+
+命令：
+make menuconfig 可以打开一个文本图形配置界面配置buildroot。
+在configs目录下有很多典型配置，可以选择一个自己需要的，然后执行
+make xxxx
+
+几点需要注意：
+1). 手动配置安装包
+buildroot会选择从网上下载软件包，由于使用wget下载速度较慢，可以使用CTRL+C中断buildroot，然后使用其他工具将相应软件包下载好然后到 buildroot/dl目录下
+重新执行make，buildroot可以自动执行。
+
+2). toolchain配置
+既可以选择网上下载安装也可以使用本机已经安装的toolchain。附录中选择的是本机安装的toolchain。toolchain的安装路径需要配置正确。
+
+3). rootfs
+最好选择ramfs，并选择tar。这样就有了可以根据自己的需要对buildroot生成的rootfs进行定制。
+
+4). 生成
+最终编译生成的包位于 buildroot/output/imgages目录下。
+
+PS: 
+1). Ctrl+C中断buildroot后，重新make，buildroot可以继续执行。
+2). 不要使用make -j4多线程编译，会导致失败。
+
+2. qemu
+
+1). 安装
+qemu为 ubuntu12.04(64bit) apt-get安装。
+sudo apt-get install qemu-system qemu
+说明：qemu-system-arm位于 qemu-system包中，qemu包中仅仅含有x86版。
+
+2). 配置
+
+zsh中，需要对？转义才能正确列出当前支持的开发板，如下。
+qemu-system-arm -M \? 
+
+配置网络：
+
+3). 启动
+无LCD方式
+
+qemu-system-arm -nographic -M versatilepb -s -m 256M -serial stdio -kernel zImage-3.0.4 -initrd rootfs.cpio.gz -append "root=/dev/ram rw init=/linuxrc mem=256M console=ttyAMA0"
+
+   ramdisk方式
+qemu-system-arm -M versatilepb -s -m 256M -serial stdio -kernel zImage-3.0.4 -initrd rootfs.cpio.gz -append "root=/dev/ram rw init=/linuxrc mem=256M console=ttyAMA0"
+
+   nfs方式
+qemu-system-arm -nographic -M versatilepb -m 64 -kernel zImage-org -append "root=/dev/nfs nfsroot=192.168.1.120:/home/prife/rootfs/buildroot rw ip=192.168.1.122::192.168.1.120:255.255.255.0 console=ttyAMA0" -net nic -net tap,ifname=tap0,script=no 
+
+4). 配置uboot [未测试]
+
+参考：http://4526621.blog.51cto.com/4516621/1044040
+
+setenv bootargs root=/dev/nfs rw nfsroot=192.168.42.1:/srv/nfsroot/ ip=192.168.42.2 
+
+set ipaddr 192.168.42.2                                                                                                                                           
+set netmask 255.255.255.0                                                                                                                                         
+set gatewayip 192.168.42.1                                                                                                                                               
+set serverip 192.168.42.1 
+
+set ipaddr 192.168.42.2; set netmask 255.255.255.0;set gatewayip 192.168.42.1;set serverip 192.168.42.1
+setenv bootargs root=/dev/nfs rw nfsroot=192.168.42.1:/work/rootfs/mini2440/ ip=192.168.42.2 
+
+setenv bootargs root=/dev/nfs rw nfsroot=192.168.42.1:/work/rootfs/mini2440 rw ip=192.168.42.2::192.168.42.1:255.255.255.0
+
+5). 其他
+5.1) 解包
+$ gunzip rootfs.cpio.gz
+生成 rootfs.cpio，然后执行
+$ mkdir rootfs
+$ cd rootfs
+$ cpio -idmv < rootfs.cpio
+
+过程中遇到的问题：
+
+1). 内核编译错误
+[参考] http://blog.csdn.net/gchww/article/details/7571584
+Error: selected processor does not support ARM mode `smc #0  
+
+gcc version 4.7.2 (Sourcery CodeBench Lite 2012.09-64) 编译linux 3.0.4与linux 3.12.0都会出现这个错误。更换如下版本toolchain后编译正常。
+
+arm-2013.05-24-arm-none-linux-gnueabi-i686-pc-linux-gnu.tar.bz2
+
+2). qemu启动卡死
+[参考]https://lkml.org/lkml/2013/8/11/121
+
+版本信息：
+QEMU emulator version 1.0.50 (Debian 1.0.50-2012.03-0ubuntu2.1), Copyright (c) 2003-2008 Fabrice Bellard
+
+linux 3.12编译出来不能运行。linux3.0.4可以正确启动。
+
+解决方法：
+  2.1) 使用第三方linux-kernel http://git.yoctoproject.org/cgit/cgit.cgi/linux-yocto-3.8/
+  2.2) 更新qemu（目前qemu的版本已经为1.5.2了，不确定是否修复了这个bug)
+  2.3) 使用老版本linux内核，如3.0.4
+
+3). buildroot制作出来的rootfs.cpio.gz可能会出现如下错误。
+
+mount: mounting devtmpfs on /dev failed: No such device
+can't open /dev/null: No such file or directory
+can't open /dev/null: No such file or directory
+can't open /dev/ttyAMA0: No such file or directory
+input: ImExPS/2 Generic Explorer Mouse as /devices/fpga:07/serio1/input/input1
+can't open /dev/ttyAMA0: No such file or directory
+can't open /dev/ttyAMA0: No such file or directory
+
+/dev选择static方式，默认为devtmpfs方式，怀疑buildroot2013.11的bug，8月份时还可以正常工作。
+
+[参考文献]
+http://hi.baidu.com/lianhd/item/8f95d5f2177f8a16ce9f32aa
+   编译内核参考，以及qemu启动参数参考
+
+扩展阅读：
+[未阅读] http://blog.csdn.net/wfing/article/details/5758240
