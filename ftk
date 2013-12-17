@@ -1,0 +1,57 @@
+参考ftk/tools/cross/REDME中的方法安装。
+
+编译方法:
+tar xvf ftk.tar.gz
+复制 网盘 qemu_linux/ftk/packeges 到ftk的父目录下
+复制env.sh，makedist.sh，cross.mk 到ftk的父目录下
+根据需要修改env.sh与cross.mk
+source env.sh
+make -f cross.mk
+./makedist.sh
+
+说明：编译过程临时文件被保存到了host的/opt目录下，因此需要配置权限，我的方法是：
+sudo chmod prife.prife /opt
+
+ftk编译遇到如下错误：
+[错误0]
+ftk依赖一些外部库，而ftk自带的编译脚本会自动更新下载更新。其中部分链接失效，部分依赖的软件包我下载下来放到网盘 qemu_linux/ftk/packeges目录复制。
+
+[错误1]
+libtoolize..
+libtoolize: putting auxiliary files in `.'.
+libtoolize: linking file `./ltmain.sh'
+libtoolize: putting macros in AC_CONFIG_MACRO_DIR, `m4'.
+libtoolize: linking file `m4/libtool.m4'
+libtoolize: linking file `m4/ltoptions.m4'
+libtoolize: linking file `m4/ltsugar.m4'
+libtoolize: linking file `m4/ltversion.m4'
+libtoolize: linking file `m4/lt~obsolete.m4'
+./autogen.sh: 行 7: gtkdocize: 未找到命令
+make: *** [libftk] 错误 1
+FAIL
+
+解决方法：
+安装sudo apt-get install gtk-doc-tools
+
+[错误2]
+Making all in music
+/bin/sh: 第 17 行: cd: music: 没有那个文件或目录
+make[3]: *** [all-recursive] 错误 1
+make[3]:正在离开目录 `/home/prife/work/rootfs/versatile/ota/ftk/arm/apps'
+make[2]: *** [all-recursive] 错误 1
+make[2]:正在离开目录 `/home/prife/work/rootfs/versatile/ota/ftk/arm'
+make[1]: *** [all] 错误 2
+make[1]:正在离开目录 `/home/prife/work/rootfs/versatile/ota/ftk/arm'
+make: *** [libftk] 错误 2
+
+解决方法：
+git grep -n music
+然后删掉两处出现的music程序后，重新make
+
+-------------------------------------------------------------------------------------------------------------
+ftk 原理
+
+ftk的嵌入式版本采用framebuffer作为后端。关于framebuffer的原理，可以参考下面的代码
+
+qemu开发，支持/dev/fb0存在，并且编写测试程序
+baidu网盘 /qemu_linux/Framebuffer目录下已经有几个程序可以参考。
