@@ -46,8 +46,21 @@ qemu-system-arm -nographic -M versatilepb -s -m 256M -serial stdio -kernel zImag
    ramdisk方式
 qemu-system-arm -M versatilepb -s -m 256M -serial stdio -kernel zImage-3.0.4 -initrd rootfs.cpio.gz -append "root=/dev/ram rw init=/linuxrc mem=256M console=ttyAMA0"
 
-   nfs方式
-qemu-system-arm -nographic -M versatilepb -m 64 -kernel zImage-org -append "root=/dev/nfs nfsroot=192.168.1.120:/home/prife/rootfs/buildroot rw ip=192.168.1.122::192.168.1.120:255.255.255.0 console=ttyAMA0" -net nic -net tap,ifname=tap0,script=no 
+   nfs方式启动，配置方法
+$ sudo tunctl -u $USER -t tap0 
+$ sudo ifconfig tap0 192.168.42.1 
+
+$ qemu-system-arm -nographic -M versatilepb -m 64 -kernel zImage-3.0.4 -append "root=/dev/nfs nfsroot=192.168.42.1:/home/prife/work/rootfs/versatile/ rw ip=192.168.42.2::192.168.42.1:255.255.255.0 console=ttyAMA0" -net nic -net tap,ifname=tap0,script=no
+
+打开LCD （-show-cursor显示鼠标）
+$ qemu-system-arm  -M versatilepb -m 64 -serial stdio -kernel zImage-3.0.4  -show-cursor  -append "root=/dev/nfs nfsroot=192.168.42.1:/home/prife/work/rootfs/versatile/ rw ip=192.168.42.2::192.168.42.1:255.255.255.0 console=ttyAMA0" -net nic -net tap,ifname=tap0,script=no
+
+说明：
+首先，tap0指定的ip并需要和主机ip在同一个网段。
+其次，nfsroot路径必须是全路径，否则会无法挂载
+再次，linux内核默认支持nfs启动，因此出现无法挂载NFS的错误一般可能是如下原因：
+   qemu参数配置错误（如nfsroot路径不是全路径）
+   nfs服务打开
 
 4). 配置uboot [未测试]
 
@@ -61,9 +74,9 @@ set gatewayip 192.168.42.1
 set serverip 192.168.42.1 
 
 set ipaddr 192.168.42.2; set netmask 255.255.255.0;set gatewayip 192.168.42.1;set serverip 192.168.42.1
-setenv bootargs root=/dev/nfs rw nfsroot=192.168.42.1:/work/rootfs/mini2440/ ip=192.168.42.2 
+setenv bootargs root=/dev/nfs rw nfsroot=192.168.42.1:/home/prife/work/rootfs/mini2440/ ip=192.168.42.2 
 
-setenv bootargs root=/dev/nfs rw nfsroot=192.168.42.1:/work/rootfs/mini2440 rw ip=192.168.42.2::192.168.42.1:255.255.255.0
+setenv bootargs root=/dev/nfs rw nfsroot=192.168.42.1:/home/prife/work/rootfs/mini2440 rw ip=192.168.42.2::192.168.42.1:255.255.255.0
 
 5). 其他
 5.1) 解包
