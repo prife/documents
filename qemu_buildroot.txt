@@ -56,13 +56,14 @@ $ qemu-system-arm -nographic -M versatilepb -m 64 -kernel zImage-3.0.4 -append "
 $ qemu-system-arm  -M versatilepb -m 64 -serial stdio -kernel zImage-3.0.4  -show-cursor  -append "root=/dev/nfs nfsroot=192.168.42.1:/home/prife/work/rootfs/versatile/ rw ip=192.168.42.2::192.168.42.1:255.255.255.0 console=ttyAMA0" -net nic -net tap,ifname=tap0,script=no
 
 说明：
-首先，tap0指定的ip并需要和主机ip在同一个网段。
+首先，tap0指定的ip与主机实际ip无关。
 其次，nfsroot路径必须是全路径，否则会无法挂载
 再次，linux内核默认支持nfs启动，因此出现无法挂载NFS的错误一般可能是如下原因：
    qemu参数配置错误（如nfsroot路径不是全路径）
-   nfs服务打开
+   nfs服务未打开
 
 4). 配置uboot [未测试]
+说明：本节作者未测试，实际上它不是必须的。
 
 参考：http://4526621.blog.51cto.com/4516621/1044040
 
@@ -79,7 +80,7 @@ setenv bootargs root=/dev/nfs rw nfsroot=192.168.42.1:/home/prife/work/rootfs/mi
 setenv bootargs root=/dev/nfs rw nfsroot=192.168.42.1:/home/prife/work/rootfs/mini2440 rw ip=192.168.42.2::192.168.42.1:255.255.255.0
 
 5). 其他
-5.1) 解包
+5.1) 解包命令
 $ gunzip rootfs.cpio.gz
 生成 rootfs.cpio，然后执行
 $ mkdir rootfs
