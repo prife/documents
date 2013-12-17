@@ -1,0 +1,405 @@
+编写代码实现数据格式转换
+Bus Hound 6.01 capture on Windows Vista Service Pack 1 (x64). Complements of www.perisoft.net
+
+  Device - Device ID (followed by the endpoint for USB devices)
+            (15) USB 输入设备
+  Phase  - Phase Type
+            IN    Data in transfer           
+            OUT   Data out transfer          
+  Data   - Hex dump of the data transferred
+  Descr  - Description of the phase
+  Cmd... - Position in the captured data
+
+
+Device  Phase  Data                      Description       Cmd.Phase.Ofs(rep)
+------  -----  ------------------------  ----------------  ------------------
+  15.1  OUT    00 06 00 00  00 06 00 47  .......G                 1.1.0        
+               47 4b 00 00  00 00 00 00  GK......                 1.1.8        
+               00 00 00 00  00 00 00 00  ........                 1.1.16       
+               00 00 00 00  00 00 00 00  ........                 1.1.24       
+               00 00 00 00  00 00 00 00  ........                 1.1.32       
+               00 00 00 00  00 00 00 00  ........                 1.1.40       
+               00 00 00 00  00 00 00 00  ........                 1.1.48       
+               00 00 00 00  00 00 00 00  ........                 1.1.56       
+  15.1  IN     00 42 00 00  00 3a 9f 40  .B...:.@                 2.1.0        
+               59 c5 81 52  9d 7a 0d db  Y..R.z..                 2.1.8        
+               6c da db 4d  d1 4c 02 22  l..M.L."                 2.1.16       
+               76 61 c0 a9  f7 f2 cf 3a  va.....:                 2.1.24       
+               6e 10 54 6c  74 59 2f 5b  n.TltY/[                 2.1.32       
+               aa 64 13 44  e9 63 9d a8  .d.D.c..                 2.1.40       
+               5c 7c ee e4  80 51 bc 35  \....Q.5                 2.1.48       
+               78 ee 84 fa  ed 6d b0 60  x....m.`                 2.1.56       
+  15.1  IN     00 42 00 3a  00 08 12 2e  .B.:....                 3.1.0        
+               60 1a 55 ff  90 00 7a 8c  `.U...z.                 3.1.8        
+               1f a1 8a 1c  6b 58 c5 5f  ....kX._                 3.1.16       
+               ba 4f fd 61  99 87 97 70  .O.a...p                 3.1.24       
+               a3 b8 b5 3f  7b dd 1d e4  ...?....                 3.1.32       
+               c7 52 02 9b  a8 a5 75 d9  .R....u.                 3.1.40       
+               ab 7d f7 c1  fd 08 49 1a  ......I.                 3.1.48       
+               97 e9 b0 4d  ce 55 08 79  ...M.U.y                 3.1.56       
+  15.1  OUT    3e 92 f6 60  46 89 30 93  >..`F.0.                 4.1.0        
+               cc 85 a1 1d  b2 d2 a2 10  ........                 4.1.8        
+               49 47 c3 b7  eb d4 bc 47  IG.....G                 4.1.16       
+               20 89 29 9a  61 9a 05 6b   .).a..k                 4.1.24       
+               e0 d0 66 d0  27 1d 29 e6  ..f.'.).                 4.1.32       
+               4f 12 d3 f7  b6 08 02 74  O......t                 4.1.40       
+               eb c5 ab 14  45 82 fe e6  ....E...                 4.1.48       
+               a9 6e 3e 5a  fd a8 8c 0c  .n>Z....                 4.1.56       
+  15.1  IN     ac 3d 86 77  b8 4b a3 9c  .=.w.K..                 5.1.0        
+               16 32 d3 f0  e3 0c 41 39  .2....A9                 5.1.8        
+               55 61 9f 58  f4 45 94 c3  Ua.X.E..                 5.1.16       
+               78 84 40 1c  d3 bf 71 f7  x.@...q.                 5.1.24       
+               29 4b a6 a6  dd 8e a7 9f  )K......                 5.1.32       
+               64 b3 e7 c9  bd 41 a6 a8  d....A..                 5.1.40       
+               62 60 21 43  1c 8e 48 7c  b`!C..H.                 5.1.48       
+               c5 73 11 52  50 bb 5d ae  .s.RP.].                 5.1.56       
+  15.1  OUT    20 90 ec 3b  1b ea 47 43   ..;..GC                 6.1.0(2)     
+               a1 fe a8 a4  3f b4 c7 55  ....?..U                 6.1.8        
+               1c 06 e6 0c  6d 7c 37 e9  ....m.7.                 6.1.16       
+               16 6b a8 91  58 a8 8c d5  .k..X...                 6.1.24       
+               d2 47 0d 94  f1 42 3a b6  .G...B:.                 6.1.32       
+               42 04 85 87  c2 1a c2 07  B.......                 6.1.40       
+               ec 64 6b 3a  52 df e7 50  .dk:R..P                 6.1.48       
+               de 01 39 c0  ff a7 da 9a  ..9.....                 6.1.56       
+  15.1  IN     67 d9 2f ca  da 25 96 e7  g./..%..                 7.1.0(2)     
+               69 c2 ec ca  4f 20 cc 15  i...O ..                 7.1.8        
+               30 0f ec 16  02 29 f3 64  0....).d                 7.1.16       
+               74 2a 70 c7  4b 7c 0f b5  t*p.K...                 7.1.24       
+               b4 f3 da a5  8d 3b 30 a5  .....;0.                 7.1.32       
+               28 68 ca e2  ce 59 8c a9  (h...Y..                 7.1.40       
+               48 6e ef 54  6c d5 d7 5b  Hn.Tl..[                 7.1.48       
+               18 67 60 a9  a8 32 34 b5  .g`..24.                 7.1.56       
+  15.1  OUT    a5 61 2d 97  01 6d fc 14  .a-..m..                10.1.0        
+               a4 4e e4 54  9c 15 21 63  .N.T..!c                10.1.8        
+               8c 6e 9f 1a  f6 b8 83 f7  .n......                10.1.16       
+               e9 1b e0 f2  92 b5 3a 33  ......:3                10.1.24       
+               ee 07 68 32  fc 50 cf fd  ..h2.P..                10.1.32       
+               4a cd 33 5f  ce f7 2b 48  J.3_..+H                10.1.40       
+               de 45 12 9b  b5 7e 2b 55  .E....+U                10.1.48       
+               10 93 5c 44  b1 3c 40 c1  ..\D.<@.                10.1.56       
+  15.1  IN     29 af 30 1b  53 10 ff b3  ).0.S...                11.1.0        
+               bd ea 0b 21  39 b1 72 c6  ...!9.r.                11.1.8        
+               04 df a0 20  62 6b 88 ba  ... bk..                11.1.16       
+               6d af ea 06  f4 b6 19 c2  m.......                11.1.24       
+               c3 e4 2b 77  17 e5 7b 9b  ..+w....                11.1.32       
+               2b 2a e0 e2  7d f7 d7 0b  +*......                11.1.40       
+               75 0c 09 21  89 85 5e 90  u..!..^.                11.1.48       
+               ac 68 83 5d  a3 4a 4f 7c  .h.].JO.                11.1.56       
+  15.1  OUT    a5 61 2d 97  01 6d fc 14  .a-..m..                12.1.0        
+               94 97 3b 82  1a d6 16 61  ..;....a                12.1.8        
+               4f 2a 5e 61  06 2a 0b 8f  O*^a.*..                12.1.16       
+               30 e9 0f 5f  91 1d f9 82  0.._....                12.1.24       
+               2e df 60 5a  0d 6f 6b 3a  ..`Z.ok:                12.1.32       
+               9b 57 6e 16  a0 52 e9 93  .Wn..R..                12.1.40       
+               98 50 8d 73  2a 0c 69 c9  .P.s*.i.                12.1.48       
+               2f 2a 27 8d  92 b1 e6 e3  /*'.....                12.1.56       
+  15.1  IN     5a 68 9c fe  a7 0f 4f df  Zh....O.                13.1.0        
+               60 0d 5a c9  e1 54 5c 12  `.Z..T\.                13.1.8        
+               cd a2 99 79  3e 3b 6e fc  ...y>;n.                13.1.16       
+               59 7d 74 58  ab 6b 6e 82  Y.tX.kn.                13.1.24       
+               a5 4e 88 dc  13 bc 02 c5  .N......                13.1.32       
+               1a 8a f3 bd  40 c1 54 9d  ....@.T.                13.1.40       
+               bf 83 13 9e  15 1c 4e e4  ......N.                13.1.48       
+               19 b6 73 d5  ae 7a 29 95  ..s..z).                13.1.56       
+  15.1  OUT    a5 61 2d 97  01 6d fc 14  .a-..m..                14.1.0        
+               f3 01 b7 5a  ef ae 15 a5  ...Z....                14.1.8        
+               ab b0 28 1e  0b dc 34 34  ..(...44                14.1.16       
+               3e f7 cc 94  af fe 88 dd  >.......                14.1.24       
+               f3 6a 60 2b  b1 7b 1d 63  .j`+...c                14.1.32       
+               e9 3f af fb  cf 53 ed 66  .?...S.f                14.1.40       
+               e9 0a f6 6f  78 8c 37 c9  ...ox.7.                14.1.48       
+               4f 42 69 85  f2 42 7f 2f  OBi..B./                14.1.56       
+  15.1  IN     0e 56 27 85  f4 6e 2b 6a  .V'..n+j                15.1.0        
+               cd a2 1f dc  15 51 f0 6c  .....Q.l                15.1.8        
+               52 14 e8 b1  c0 45 d7 e5  R....E..                15.1.16       
+               ca c4 4f 3b  a5 ce 96 5f  ..O;..._                15.1.24       
+               78 70 20 26  be d3 aa 97  xp &....                15.1.32       
+               f2 83 8c 86  32 5d 56 91  ....2]V.                15.1.40       
+               2e 85 4c 51  b1 ee b6 63  ..LQ...c                15.1.48       
+               e1 9e d5 5b  e9 5b fc b2  ...[.[..                15.1.56   
+
+转换为
+
+const char packet_out0[] = {
+0x00, 0x06, 0x00, 0x00, 0x00, 0x06, 0x00, 0x47, 
+0x47, 0x4b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+};
+const char packet_in0[] = {
+0x00, 0x42, 0x00, 0x00, 0x00, 0x3a, 0x9f, 0x40, 
+0x59, 0xc5, 0x81, 0x52, 0x9d, 0x7a, 0x0d, 0xdb, 
+0x6c, 0xda, 0xdb, 0x4d, 0xd1, 0x4c, 0x02, 0x22, 
+0x76, 0x61, 0xc0, 0xa9, 0xf7, 0xf2, 0xcf, 0x3a, 
+0x6e, 0x10, 0x54, 0x6c, 0x74, 0x59, 0x2f, 0x5b, 
+0xaa, 0x64, 0x13, 0x44, 0xe9, 0x63, 0x9d, 0xa8, 
+0x5c, 0x7c, 0xee, 0xe4, 0x80, 0x51, 0xbc, 0x35, 
+0x78, 0xee, 0x84, 0xfa, 0xed, 0x6d, 0xb0, 0x60, 
+};
+const char packet_in1[] = {
+0x00, 0x42, 0x00, 0x3a, 0x00, 0x08, 0x12, 0x2e, 
+0x60, 0x1a, 0x55, 0xff, 0x90, 0x00, 0x7a, 0x8c, 
+0x1f, 0xa1, 0x8a, 0x1c, 0x6b, 0x58, 0xc5, 0x5f, 
+0xba, 0x4f, 0xfd, 0x61, 0x99, 0x87, 0x97, 0x70, 
+0xa3, 0xb8, 0xb5, 0x3f, 0x7b, 0xdd, 0x1d, 0xe4, 
+0xc7, 0x52, 0x02, 0x9b, 0xa8, 0xa5, 0x75, 0xd9, 
+0xab, 0x7d, 0xf7, 0xc1, 0xfd, 0x08, 0x49, 0x1a, 
+0x97, 0xe9, 0xb0, 0x4d, 0xce, 0x55, 0x08, 0x79, 
+};
+const char packet_out1[] = {
+0x3e, 0x92, 0xf6, 0x60, 0x46, 0x89, 0x30, 0x93, 
+0xcc, 0x85, 0xa1, 0x1d, 0xb2, 0xd2, 0xa2, 0x10, 
+0x49, 0x47, 0xc3, 0xb7, 0xeb, 0xd4, 0xbc, 0x47, 
+0x20, 0x89, 0x29, 0x9a, 0x61, 0x9a, 0x05, 0x6b, 
+0xe0, 0xd0, 0x66, 0xd0, 0x27, 0x1d, 0x29, 0xe6, 
+0x4f, 0x12, 0xd3, 0xf7, 0xb6, 0x08, 0x02, 0x74, 
+0xeb, 0xc5, 0xab, 0x14, 0x45, 0x82, 0xfe, 0xe6, 
+0xa9, 0x6e, 0x3e, 0x5a, 0xfd, 0xa8, 0x8c, 0x0c, 
+};
+const char packet_in2[] = {
+0xac, 0x3d, 0x86, 0x77, 0xb8, 0x4b, 0xa3, 0x9c, 
+0x16, 0x32, 0xd3, 0xf0, 0xe3, 0x0c, 0x41, 0x39, 
+0x55, 0x61, 0x9f, 0x58, 0xf4, 0x45, 0x94, 0xc3, 
+0x78, 0x84, 0x40, 0x1c, 0xd3, 0xbf, 0x71, 0xf7, 
+0x29, 0x4b, 0xa6, 0xa6, 0xdd, 0x8e, 0xa7, 0x9f, 
+0x64, 0xb3, 0xe7, 0xc9, 0xbd, 0x41, 0xa6, 0xa8, 
+0x0d, 0x62, 0x60, 0x21, 0x43, 0x1c, 0x8e, 0x48, 
+0x7c, 0x0b, 0xc5, 0x73, 0x11, 0x52, 0x50, 0xbb, 
+0x5d, 0xae, };
+const char packet_out2[] = {
+0x20, 0x90, 0xec, 0x3b, 0x1b, 0xea, 0x47, 0x43, 
+0xa1, 0xfe, 0xa8, 0xa4, 0x3f, 0xb4, 0xc7, 0x55, 
+0x1c, 0x06, 0xe6, 0x0c, 0x6d, 0x7c, 0x37, 0xe9, 
+0x16, 0x6b, 0xa8, 0x91, 0x58, 0xa8, 0x8c, 0xd5, 
+0xd2, 0x47, 0x0d, 0x94, 0xf1, 0x42, 0x3a, 0xb6, 
+0x42, 0x04, 0x85, 0x87, 0xc2, 0x1a, 0xc2, 0x07, 
+0x0b, 0xec, 0x64, 0x6b, 0x3a, 0x52, 0xdf, 0xe7, 
+0x50, 0xde, 0x01, 0x39, 0xc0, 0xff, 0xa7, 0xda, 
+0x9a, };
+const char packet_in3[] = {
+0x67, 0xd9, 0x2f, 0xca, 0xda, 0x25, 0x96, 0xe7, 
+0x69, 0xc2, 0xec, 0xca, 0x4f, 0x20, 0xcc, 0x15, 
+0x30, 0x0f, 0xec, 0x16, 0x02, 0x29, 0xf3, 0x64, 
+0x00, 0x74, 0x2a, 0x70, 0xc7, 0x4b, 0x7c, 0x0f, 
+0xb5, 0xb4, 0xf3, 0xda, 0xa5, 0x8d, 0x3b, 0x30, 
+0xa5, 0x28, 0x68, 0xca, 0xe2, 0xce, 0x59, 0x8c, 
+0xa9, 0x48, 0x6e, 0xef, 0x54, 0x6c, 0xd5, 0xd7, 
+0x5b, 0x18, 0x67, 0x60, 0xa9, 0xa8, 0x32, 0x34, 
+0xb5, };
+const char packet_out3[] = {
+0xa5, 0x61, 0x2d, 0x97, 0x01, 0x6d, 0xfc, 0x14, 
+0xa4, 0x4e, 0xe4, 0x54, 0x9c, 0x15, 0x21, 0x63, 
+0x8c, 0x6e, 0x9f, 0x1a, 0xf6, 0xb8, 0x83, 0xf7, 
+0xe9, 0x1b, 0xe0, 0xf2, 0x92, 0xb5, 0x3a, 0x33, 
+0xee, 0x07, 0x68, 0x32, 0xfc, 0x50, 0xcf, 0xfd, 
+0x4a, 0xcd, 0x33, 0x5f, 0xce, 0xf7, 0x2b, 0x48, 
+0xde, 0x45, 0x12, 0x9b, 0xb5, 0x7e, 0x2b, 0x55, 
+0x10, 0x93, 0x5c, 0x44, 0xb1, 0x3c, 0x40, 0xc1, 
+};
+const char packet_in4[] = {
+0x29, 0xaf, 0x30, 0x1b, 0x53, 0x10, 0xff, 0xb3, 
+0xbd, 0xea, 0x0b, 0x21, 0x39, 0xb1, 0x72, 0xc6, 
+0x04, 0xdf, 0xa0, 0x20, 0x62, 0x6b, 0x88, 0xba, 
+0x6d, 0xaf, 0xea, 0x06, 0xf4, 0xb6, 0x19, 0xc2, 
+0xc3, 0xe4, 0x2b, 0x77, 0x17, 0xe5, 0x7b, 0x9b, 
+0x2b, 0x2a, 0xe0, 0xe2, 0x7d, 0xf7, 0xd7, 0x0b, 
+0x75, 0x0c, 0x09, 0x21, 0x89, 0x85, 0x5e, 0x90, 
+0xac, 0x68, 0x83, 0x5d, 0xa3, 0x4a, 0x4f, 0x7c, 
+};
+const char packet_out4[] = {
+0xa5, 0x61, 0x2d, 0x97, 0x01, 0x6d, 0xfc, 0x14, 
+0x94, 0x97, 0x3b, 0x82, 0x1a, 0xd6, 0x16, 0x61, 
+0x4f, 0x2a, 0x5e, 0x61, 0x06, 0x2a, 0x0b, 0x8f, 
+0x30, 0xe9, 0x0f, 0x5f, 0x91, 0x1d, 0xf9, 0x82, 
+0x00, 0x2e, 0xdf, 0x60, 0x5a, 0x0d, 0x6f, 0x6b, 
+0x3a, 0x9b, 0x57, 0x6e, 0x16, 0xa0, 0x52, 0xe9, 
+0x93, 0x98, 0x50, 0x8d, 0x73, 0x2a, 0x0c, 0x69, 
+0xc9, 0x2f, 0x2a, 0x27, 0x8d, 0x92, 0xb1, 0xe6, 
+0xe3, };
+const char packet_in5[] = {
+0x5a, 0x68, 0x9c, 0xfe, 0xa7, 0x0f, 0x4f, 0xdf, 
+0x60, 0x0d, 0x5a, 0xc9, 0xe1, 0x54, 0x5c, 0x12, 
+0xcd, 0xa2, 0x99, 0x79, 0x3e, 0x3b, 0x6e, 0xfc, 
+0x59, 0x7d, 0x74, 0x58, 0xab, 0x6b, 0x6e, 0x82, 
+0xa5, 0x4e, 0x88, 0xdc, 0x13, 0xbc, 0x02, 0xc5, 
+0x1a, 0x8a, 0xf3, 0xbd, 0x40, 0xc1, 0x54, 0x9d, 
+0xbf, 0x83, 0x13, 0x9e, 0x15, 0x1c, 0x4e, 0xe4, 
+0x19, 0xb6, 0x73, 0xd5, 0xae, 0x7a, 0x29, 0x95, 
+};
+const char packet_out5[] = {
+0xa5, 0x61, 0x2d, 0x97, 0x01, 0x6d, 0xfc, 0x14, 
+0xf3, 0x01, 0xb7, 0x5a, 0xef, 0xae, 0x15, 0xa5, 
+0xab, 0xb0, 0x28, 0x1e, 0x0b, 0xdc, 0x34, 0x34, 
+0x3e, 0xf7, 0xcc, 0x94, 0xaf, 0xfe, 0x88, 0xdd, 
+0xf3, 0x6a, 0x60, 0x2b, 0xb1, 0x7b, 0x1d, 0x63, 
+0xe9, 0x3f, 0xaf, 0xfb, 0xcf, 0x53, 0xed, 0x66, 
+0xe9, 0x0a, 0xf6, 0x6f, 0x78, 0x8c, 0x37, 0xc9, 
+0x4f, 0x42, 0x69, 0x85, 0xf2, 0x42, 0x7f, 0x2f, 
+};
+const char packet_in6[] = {
+0x0e, 0x56, 0x27, 0x85, 0xf4, 0x6e, 0x2b, 0x6a, 
+0xcd, 0xa2, 0x1f, 0xdc, 0x15, 0x51, 0xf0, 0x6c, 
+0x52, 0x14, 0xe8, 0xb1, 0xc0, 0x45, 0xd7, 0xe5, 
+0xca, 0xc4, 0x4f, 0x3b, 0xa5, 0xce, 0x96, 0x5f, 
+0x78, 0x70, 0x20, 0x26, 0xbe, 0xd3, 0xaa, 0x97, 
+0xf2, 0x83, 0x8c, 0x86, 0x32, 0x5d, 0x56, 0x91, 
+0x2e, 0x85, 0x4c, 0x51, 0xb1, 0xee, 0xb6, 0x63, 
+0xe1, 0x9e, 0xd5, 0x5b, 0xe9, 0x5b, 0xfc, 0xb2, 
+};
+
+//------------------------------------------------------------------------------------------------------------------------------
+//最终实现的代码如下所示
+//TODO: 添加打开/写入文件时的异常处理。
+
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <sstream>
+#include <vector>
+#include <fstream>
+using namespace std;
+
+void usage(char * name)
+{
+    cout << "usage:" << endl
+         << "  %s file [outfile]" << name << endl;
+}
+
+enum LINE_STATUS{
+    LINE_CONTENT_PREFIX = 0,
+    LINE_CONTENT_NEXT,
+    LINE_CONTENT_MIDDLE,
+    LINE_CONTENT_END,
+};
+
+struct line_info
+{
+    int Device;
+    int Phase;
+    int Data;
+    int Description;
+};
+
+enum phase_enum {
+    PHASE_NOTHING = 0,
+    PHASE_OUT,
+    PHASE_IN,
+};
+
+class Packet
+{
+public:
+    vector <unsigned char> content;
+    enum phase_enum phase;
+};
+
+//vector < vector <unsigned char>> packets;
+vector <Packet *> packets;
+
+vector <string> outlines;
+int main(int argc, char * argv[])
+{
+    char * in_name = NULL;
+    char * out_name = NULL;
+    if (argc < 2 || argc > 3) {
+        usage(argv[0]);
+        return -1;
+    } else if (argc == 2) {
+        in_name = argv[1];
+        out_name = "usbdes.c";
+    } else {// argc == 3)
+        in_name = argv[1];
+        out_name = argv[2];
+    }
+
+    ifstream in(in_name);
+    ofstream out(out_name, ios::out, ios::trunc);
+    string line;
+    struct line_info info;
+    enum LINE_STATUS status = LINE_CONTENT_PREFIX;
+    while (status != LINE_CONTENT_END)
+    {
+        int index;
+        if (getline(in, line) <= 0)
+            status = LINE_CONTENT_END;
+
+        static Packet * packet = NULL;
+        switch (status)
+        {
+        case LINE_CONTENT_PREFIX:
+            {
+                index = line.find("Device  Phase");  //Device
+                if (index != string::npos)
+                {
+                    info.Device = line.find("Device");
+                    info.Phase = line.find("Phase");
+                    info.Data = line.find("Data");
+                    info.Description = line.find("Description");
+                    getline(in, line); //skip "------ ----- -----------"
+                    status = LINE_CONTENT_MIDDLE;
+                }
+            }
+            break;
+        case LINE_CONTENT_MIDDLE:
+            {
+                enum phase_enum phase;//"out" or "in"
+                unsigned byte;
+                string hexstring= line.substr(info.Data, info.Description);
+                stringstream hexstream (hexstring);
+
+                if (((index = line.find("OUT")) != string::npos)
+                    && (index < info.Data))
+                    phase = PHASE_OUT;
+                else if (((index = line.find("IN")) != string::npos)
+                    && (index < info.Data))
+                    phase = PHASE_IN;
+                else
+                    phase = PHASE_NOTHING;
+
+                if (phase != PHASE_NOTHING)
+                {
+                    if (packet != NULL)
+                        packets.push_back(packet);
+                    packet = new Packet();
+                    packet->phase = phase;
+                }
+
+                while (hexstream >> hex >> byte)
+                    packet->content.push_back(static_cast<char>(byte));
+            }
+            break;
+        case LINE_CONTENT_END:
+            {
+                if (packet != NULL)
+                    packets.push_back(packet);
+            }
+            break;
+        default:break;
+        }
+    }
+
+    int out_count = 0;
+    int in_count = 0;
+    for (int i=0; i<packets.size(); i++) {
+        vector <unsigned char> &content = packets[i]->content;
+        if (packets[i]->phase == PHASE_OUT) {
+             out << "const char packet_out" << out_count << "[] = {" << endl;
+            out_count ++;
+        }else {
+            out << "const char packet_in" << in_count << "[] = {" << endl;
+            in_count ++;
+        }
+
+        for (int j=0; j<content.size(); j++) {
+            //cout << hex << setfill('0') << setw(2) << showbase << static_cast<unsigned>(content[j]) << ", ";
+            out << "0x" << setfill('0') << setw(2) << hex << static_cast<unsigned>(content[j]) << ", ";
+            if ((j+1)%8 == 0)
+                out << endl;
+        }
+        out << "};" << endl;
+    }
+}
