@@ -11,8 +11,7 @@
 想办法解决fcitx候选词列表中字体配置。
 更换版本即可，在软件中心中，输入fcitx，选择第一个。
 
-2. 解决gvim的问题
-   需要自己编译gvim，得学习一下如何打deb包
+2. 解决gvim的
    升级系统以后，gvim bug修复！
    但是gvim中汉字稀疏，汉字丑陋   
    指定字体后解决这个问题。
@@ -49,20 +48,8 @@ sudo apt-get install p7zip-rar
 8. fcitx
   配置皮肤，字体等等
 
- 在软件源中有两个，该选哪个呢？
-  选择第一个。不要选择后面的。
-
-终端中运行，报ASSERT错误。
-[WARN] /build/buildd/fcitx-4.2.0/src/lib/fcitx-config/fcitx-config.c:179-missing value: Active
-fopen: 资源暂时不可用
-[WARN] /build/buildd/fcitx-4.2.0/src/ui/classic/skin.c:142-无法加载皮肤思意，回到默认皮肤
-[INFO] /build/buildd/fcitx-4.2.0/src/ui/classic/skin.c:112-/usr/share/fcitx/skin/default/fcitx_skin.conf
-
-
-我决定阅读fcitx源码，找出原因。
 sudo apt-get install dpkg-dev
 sudo apt-get source fcitx 会在当前目录下载源码包，并解压。
-
 
 9. 上网问题
  必须使用chrome注销，否则会导致无法在其他系统中运行。
